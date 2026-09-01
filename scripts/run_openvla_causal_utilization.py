@@ -8,13 +8,8 @@ import json
 from pathlib import Path
 
 import numpy as np
-import torch
-from PIL import Image
 from sklearn.linear_model import Ridge
 from sklearn.model_selection import GroupShuffleSplit
-from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
-
-from vla_gap_lab.openvla_adapter import load_l1_action_head, predict_with_layer_addition
 
 
 def main() -> None:
@@ -31,6 +26,12 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    import torch
+    from PIL import Image
+    from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
+
+    from vla_gap_lab.openvla_adapter import load_l1_action_head, predict_with_layer_addition
+
     pairs = np.load(args.pairs, allow_pickle=False)
     hidden = np.load(args.hidden, allow_pickle=False)
     metadata = json.loads(str(pairs["metadata"]))

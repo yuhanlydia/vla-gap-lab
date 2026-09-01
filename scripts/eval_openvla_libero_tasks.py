@@ -7,16 +7,6 @@ import argparse
 import json
 from pathlib import Path
 
-import experiments.robot.libero.run_libero_eval as official_eval
-from experiments.robot.libero.run_libero_eval import (
-    GenerateConfig,
-    get_image_resize_size,
-    initialize_model,
-    run_task,
-    set_seed_everywhere,
-)
-from libero.libero import benchmark
-
 
 class CounterfactualCleanSuite:
     """Use variant init states with its official unperturbed base BDDL."""
@@ -72,6 +62,17 @@ def main() -> None:
     parser.add_argument("--also-benchmark-variant", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+
+    import experiments.robot.libero.run_libero_eval as official_eval
+    from experiments.robot.libero.run_libero_eval import (
+        GenerateConfig,
+        get_image_resize_size,
+        initialize_model,
+        run_task,
+        set_seed_everywhere,
+    )
+    from libero.libero import benchmark
+
     if not args.save_video:
 
         def skip_video(*unused_args, **unused_kwargs):

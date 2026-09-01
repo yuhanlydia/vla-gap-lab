@@ -8,10 +8,6 @@ import json
 from pathlib import Path
 
 import numpy as np
-import torch
-from transformers import AutoModel, AutoProcessor
-
-from vla_gap_lab.xvla_adapter import capture_xvla_joint_layers
 
 
 def main() -> None:
@@ -25,6 +21,11 @@ def main() -> None:
     parser.add_argument("--pooling", choices=["mean", "summary"], default="summary")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    import torch
+    from transformers import AutoModel, AutoProcessor
+
+    from vla_gap_lab.xvla_adapter import capture_xvla_joint_layers
+
     source = np.load(args.pairs, allow_pickle=False)
     processor = AutoProcessor.from_pretrained(args.checkpoint, trust_remote_code=True)
     model = AutoModel.from_pretrained(

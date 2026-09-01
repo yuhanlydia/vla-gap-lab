@@ -8,11 +8,6 @@ import json
 from pathlib import Path
 
 import numpy as np
-import torch
-from PIL import Image
-from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
-
-from vla_gap_lab.openvla_adapter import forward_openvla_action_layers
 
 
 def parse_args() -> argparse.Namespace:
@@ -27,6 +22,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    import torch
+    from PIL import Image
+    from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
+
+    from vla_gap_lab.openvla_adapter import forward_openvla_action_layers
+
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA is required")
     pair_data = np.load(args.pairs, allow_pickle=False)

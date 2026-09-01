@@ -13,3 +13,6 @@ __pycache__/
 .vscode/
 wandb/
 rollouts/
+# Python build artifacts
+build/
+dist/
