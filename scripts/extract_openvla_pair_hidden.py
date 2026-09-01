@@ -75,13 +75,20 @@ def main() -> None:
         "samples": count,
         "peak_vram_gib": torch.cuda.max_memory_allocated() / 2**30,
     }
+    pair_ids = np.asarray(pair_meta["pair_ids"][:count])
+    # Group-level IDs make the downstream split hold out entire trajectories,
+    # not merely nearby frames from trajectories seen during probe training.
+    sample_ids = np.asarray([pair_id.split(":", 1)[0] for pair_id in pair_ids])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
         args.output,
         clean=clean,
         shifted=shifted,
-        actions=pair_data["actions"][:count],
-        pair_ids=np.asarray(pair_meta["frame_indices"][:count]),
+        actions=pair_data["actions"][:count, None, :],
+        layers=np.asarray(args.layers),
+        sample_id=sample_ids,
+        shift=np.asarray([pair_meta["category"]] * count),
+        pair_ids=pair_ids,
         metadata=np.asarray(json.dumps(metadata, sort_keys=True)),
     )
     print(json.dumps({**metadata, "shape": list(clean.shape)}, indent=2))

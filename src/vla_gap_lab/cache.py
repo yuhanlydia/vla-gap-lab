@@ -13,8 +13,8 @@ class HiddenCache:
     """Matched clean/shift states and action targets.
 
     Hidden arrays are shaped ``[N, L, D]`` and actions ``[N, H, A]``.
-    ``sample_id`` guarantees that clean and shifted rows describe the same
-    simulator state and therefore share the same expert action.
+    ``sample_id`` is a split group (typically an episode ID), while clean and
+    shifted arrays remain row-aligned at the same state and expert action.
     """
 
     clean: np.ndarray

@@ -66,7 +66,7 @@ original demonstration states:
 pip install -r requirements/track1-simulator.txt
 PYTHONPATH=external/LIBERO-plus MUJOCO_GL=egl \
 TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
-python3 scripts/render_paired_libero_states.py --task-id 1 --num-frames 8 \
+python3 scripts/render_paired_libero_states.py --task-id 1 --num-demos 10 --num-frames 8 \
   --output artifacts/pairs/libero_spatial_task_1.npz
 ```
 

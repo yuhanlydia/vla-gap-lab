@@ -24,7 +24,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--suite", default="libero_spatial")
     parser.add_argument("--task-id", type=int, required=True)
-    parser.add_argument("--demo-index", type=int, default=0)
+    parser.add_argument("--demo-index", type=int, default=0, help="first demonstration index")
+    parser.add_argument("--num-demos", type=int, default=1)
     parser.add_argument("--num-frames", type=int, default=8)
     parser.add_argument("--margin", type=int, default=5)
     parser.add_argument("--dataset-root", type=Path, default=Path("data/libero"))
@@ -50,13 +51,25 @@ def main() -> None:
         args.dataset_root / args.suite, task.language, variant_name=task.name
     )
     policy_instruction = demonstration_instruction(demo_path)
+    if args.num_demos < 1:
+        raise ValueError("num-demos must be positive")
+    states_parts, action_parts, agent_parts, wrist_parts, pair_ids = [], [], [], [], []
     with h5py.File(demo_path, "r") as handle:
-        demo = handle["data"][f"demo_{args.demo_index}"]
-        indices = evenly_spaced_indices(len(demo["actions"]), args.num_frames, args.margin)
-        states = demo["states"][indices]
-        actions = demo["actions"][indices]
-        clean_agent = demo["obs/agentview_rgb"][indices]
-        clean_wrist = demo["obs/eye_in_hand_rgb"][indices]
+        for demo_index in range(args.demo_index, args.demo_index + args.num_demos):
+            key = f"demo_{demo_index}"
+            if key not in handle["data"]:
+                raise ValueError(f"demonstration {key} is unavailable")
+            demo = handle["data"][key]
+            indices = evenly_spaced_indices(len(demo["actions"]), args.num_frames, args.margin)
+            states_parts.append(demo["states"][indices])
+            action_parts.append(demo["actions"][indices])
+            agent_parts.append(demo["obs/agentview_rgb"][indices])
+            wrist_parts.append(demo["obs/eye_in_hand_rgb"][indices])
+            pair_ids.extend(f"{key}:{int(index)}" for index in indices)
+    states = np.concatenate(states_parts)
+    actions = np.concatenate(action_parts)
+    clean_agent = np.concatenate(agent_parts)
+    clean_wrist = np.concatenate(wrist_parts)
 
     env = OffScreenRenderEnv(
         bddl_file_name=suite.get_task_bddl_file_path(args.task_id),
@@ -84,8 +97,8 @@ def main() -> None:
         "category": perturbation.category,
         "difficulty_level": perturbation.difficulty_level,
         "demo_path": str(demo_path),
-        "demo_index": args.demo_index,
-        "frame_indices": indices.tolist(),
+        "demo_indices": list(range(args.demo_index, args.demo_index + args.num_demos)),
+        "pair_ids": pair_ids,
         "action_semantics": "identical simulator state; original expert action",
     }
     np.savez_compressed(
