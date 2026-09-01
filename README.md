@@ -78,3 +78,7 @@ python3 scripts/render_paired_libero_states.py --task-id 1 --num-demos 10 --num-
 - [mu-VLA checkpoint](https://huggingface.co/mu-vla/mu-vla-openvla-oft-mikasa-robo-5-tasks-m64-k2-tbptt)
 - [RoboTwin 2.0](https://github.com/HashimHS/robotwin)
 - [X-VLA](https://github.com/2toinf/X-VLA)
+
+## Results log
+
+- [Track 1 smoke-scale preliminary diagnostic](docs/results/track1_preliminary.md)

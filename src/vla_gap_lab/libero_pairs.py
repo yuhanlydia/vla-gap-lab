@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 
 ACTION_PRESERVING_CATEGORIES = frozenset(
-    {"Background Textures", "Camera View", "Lighting", "Sensor Noise"}
+    {"Background Textures", "Camera Viewpoints", "Light Conditions", "Sensor Noise"}
 )
 
 
