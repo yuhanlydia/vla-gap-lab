@@ -44,6 +44,19 @@ configurations with any valid shifted probe, the best retention was:
 The maximum over all layers, alphas, and splits was **0.608**, below the
 preregistered 0.8 threshold.
 
+The sweep can be regenerated without manually selecting runs:
+
+```bash
+PYTHONPATH=src python3 scripts/summarize_probe_sweep.py \
+  artifacts/reports/camera611_n480_a*_s*.json \
+  --output artifacts/reports/camera611_n480_sweep_summary.json
+```
+
+The aggregator requires every input to reference the same hidden cache,
+retains runs whose shifted R² is negative, and records invalid runs instead of
+silently excluding them. This produces 24/24 structurally valid runs; the 16
+count above is the stricter subset with positive shifted R².
+
 ## Gate decision
 
 **Not passed.** This variant satisfies the control-failure half of the
