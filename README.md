@@ -96,6 +96,8 @@ TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
 
 ## Results log
 
+- [Machine-readable Gate-0 summary](results/gate0_summary.yaml)
+
 - [Track 1 smoke-scale preliminary diagnostic](docs/results/track1_preliminary.md)
 - [Track 1 causal-utilization diagnostic](docs/results/track1_causal_utilization.md)
 - [Track 1 instruction-matched closed-loop pilot](docs/results/track1_local_closed_loop.md)

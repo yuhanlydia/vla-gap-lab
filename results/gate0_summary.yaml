@@ -1,0 +1,51 @@
+schema_version: 1
+generated_from_local_pilots: true
+official_benchmark_claim: false
+
+tracks:
+  latent_action:
+    gate_passed: false
+    method_training_started: false
+    decisive_variant: libero_spatial_task_index_611
+    evidence:
+      control_retention: 0.1111111111
+      representation_retention_max: 0.6076238734
+      representation_threshold: 0.8
+      control_threshold: 0.7
+    reason: control failed, but the action representation did not survive the camera shift
+    document: docs/results/track1_camera611_n480.md
+
+  memory_revision:
+    gate_passed: false
+    method_training_started: false
+    decisive_task: ShellGameShuffleTouch-VLA-v0
+    evidence:
+      episodes: 24
+      successes: 0
+      first_swap_identity_balanced_accuracy: 0.743
+      first_swap_slot_balanced_accuracy: 0.343
+      causal_success_gain_pp: 0.0
+      required_causal_success_gain_pp: 10.0
+    reason: representation diagnostic supports early revision failure, but no valid causal success gain
+    document: docs/results/track2_memory_content_probe.md
+
+  state_transport:
+    gate_passed: false
+    method_training_started: false
+    decisive_task: blocks_ranking_rgb
+    evidence:
+      paired_seeds: 32
+      best_control_layer: 8
+      mapped_retrieval: 0.1875
+      fold_chance: 0.125
+      permutation_p_value: 0.1357
+      retrieval_margin: -0.0088
+      required_cross_phase_accuracy: 0.8
+    reason: reset-state retrieval did not survive sample expansion and semantic phases remain unavailable
+    document: docs/results/track3_paired_reset.md
+
+benchmark_audits:
+  libero_plus_instruction_metadata:
+    affected_tasks: 8493
+    total_tasks: 10030
+    document: docs/results/libero_plus_language_metadata_audit.md
