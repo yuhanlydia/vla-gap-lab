@@ -41,6 +41,16 @@ Run the first-party CPU checks without traversing pinned upstream submodules:
 scripts/check.sh
 ```
 
+Before tagging or handing off a snapshot, build and import the wheel in an
+isolated environment as well:
+
+```bash
+scripts/release_check.sh
+```
+
+This uses `uv build` so a broken host-global setuptools installation cannot
+silently contaminate the package check.
+
 ## Hardware note
 
 The current development machine has a 16 GB RTX A4000. Configs therefore support hidden-state caching, batch size 1, CPU offload, and optional 4-bit model loading. The target reference setup remains a 24 GB GPU. A failed memory preflight is recorded as a hardware block rather than silently changing the scientific protocol.
