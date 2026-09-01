@@ -1,0 +1,21 @@
+track: latent_action
+seed: 42
+layers: [4, 8, 12, 16, 20, 24, 28, 32]
+shifts: [camera, light, background, noise]
+samples:
+  minimum: 2000
+  target: 5000
+probe:
+  type: ridge
+  alpha: 1.0
+  validation_fraction: 0.2
+gate:
+  representation_retention_min: 0.8
+  control_retention_max: 0.7
+controlskip:
+  rank: 8
+  action_horizon: 8
+  action_dim: 7
+  learning_rate: 0.0001
+  loss: l1
+
