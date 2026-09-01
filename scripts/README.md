@@ -51,3 +51,11 @@ PYTHONPATH=../../src uv run python ../../scripts/smoke_mu_vla_mikasa.py \
 The adapter supplies only the two tiny Prismatic modules imported by the
 checkpoint's remote code. This avoids importing the unrelated TensorFlow/RLDS
 training pipeline into simulator inference.
+
+Run an explicitly reset, receding-horizon closed-loop episode:
+
+```bash
+PYTHONPATH=../../src uv run python ../../scripts/eval_mu_vla_intervention.py \
+  --checkpoint ../../models/mu-vla-m64-k2 --task RememberColor3-VLA-v0 \
+  --mode normal --episodes 1 --output ../../artifacts/mikasa/remember_color_normal.json
+```
