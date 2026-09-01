@@ -61,6 +61,19 @@ PYTHONPATH=../../src uv run python ../../scripts/eval_mu_vla_intervention.py \
   --mode normal --episodes 1 --output ../../artifacts/mikasa/remember_color_normal.json
 ```
 
+Collect and probe dynamic ShellGame memory without erasing target identity:
+
+```bash
+cd external/MIKASA-Robo
+PYTHONPATH=../../src uv run python ../../scripts/collect_mu_vla_memory_trajectory.py \
+  --checkpoint ../../models/mu-vla-m64-k2 --episodes 24 --pooling summary \
+  --output ../../artifacts/mikasa/shell_shuffle_memory_summary_n24.npz
+cd ../..
+PYTHONPATH=src .venv-openvla/bin/python scripts/probe_mu_vla_memory_tracking.py \
+  --trajectory artifacts/mikasa/shell_shuffle_memory_summary_n24.npz --alpha 100 \
+  --output artifacts/reports/shell_shuffle_memory_summary_probe_n24_a100.json
+```
+
 ## OpenVLA causal utilization
 
 Use a separate system-site-packages environment. OpenVLA's Prismatic vision

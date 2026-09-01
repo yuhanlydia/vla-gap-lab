@@ -50,6 +50,7 @@ The current development machine has a 16 GB RTX A4000. Configs therefore support
 - [x] Track 2: real MIKASA simulator + mu-VLA memory/action/proprio smoke path
 - [x] Track 2: memory interventions + inertia metrics
 - [x] Track 2: phase-aware Tracking Gate-0 (did not pass; no refresh training)
+- [x] Track 2: episode-held-out identity-vs-location memory-content probe
 - [ ] Track 2: conflict-adaptive refresh
 - [x] Track 3: real X-VLA checkpoint load, action forward, and layer capture
 - [x] Track 3: same-seed Aloha/Franka reset renderer and cross-validated transport probe
@@ -96,5 +97,6 @@ TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
 - [LIBERO-Plus language-metadata audit](docs/results/libero_plus_language_metadata_audit.md)
 - [Track 2 static-memory intervention smoke](docs/results/track2_static_smoke.md)
 - [Track 2 dynamic-tracking Gate-0](docs/results/track2_tracking_gate.md)
+- [Track 2 dynamic memory-content probe](docs/results/track2_memory_content_probe.md)
 - [Track 3 official Aloha trajectory/hidden-state smoke](docs/results/track3_aloha_smoke.md)
 - [Track 3 paired Aloha/Franka reset-state diagnostic](docs/results/track3_paired_reset.md)
