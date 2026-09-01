@@ -48,7 +48,8 @@ The current development machine has a 16 GB RTX A4000. Configs therefore support
 - [x] Track 2: memory interventions + inertia metrics
 - [ ] Track 2: conflict-adaptive refresh
 - [x] Track 3: real X-VLA checkpoint load, action forward, and layer capture
-- [ ] Track 3: layerwise portability probes on paired RoboTwin trajectories
+- [x] Track 3: same-seed Aloha/Franka reset renderer and cross-validated transport probe
+- [ ] Track 3: semantic-phase portability probes on paired RoboTwin trajectories
 - [ ] Track 3: hidden-state transport and distillation
 
 Validated Track 1 model-load path on the development machine:
@@ -86,3 +87,4 @@ python3 scripts/render_paired_libero_states.py --task-id 1 --num-demos 10 --num-
 - [Track 1 smoke-scale preliminary diagnostic](docs/results/track1_preliminary.md)
 - [Track 2 static-memory intervention smoke](docs/results/track2_static_smoke.md)
 - [Track 3 official Aloha trajectory/hidden-state smoke](docs/results/track3_aloha_smoke.md)
+- [Track 3 paired Aloha/Franka reset-state diagnostic](docs/results/track3_paired_reset.md)

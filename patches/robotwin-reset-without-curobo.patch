@@ -1,0 +1,55 @@
+diff --git a/envs/_base_task.py b/envs/_base_task.py
+index 301da9f..f51b16a 100644
+--- a/envs/_base_task.py
++++ b/envs/_base_task.py
+@@ -122,10 +122,14 @@ class Base_Task(gym.Env):
+         self.load_camera(**kwags)
+         self.robot.move_to_homestate()
+ 
+-        render_freq = self.render_freq
+-        self.render_freq = 0
+-        self.together_open_gripper(save_freq=None)
+-        self.render_freq = render_freq
++        # Reset/render-only runs do not construct a motion planner.  The robot is
++        # already at the configured home state, so planner-based gripper motion
++        # is unnecessary in this mode.
++        if self.need_plan:
++            render_freq = self.render_freq
++            self.render_freq = 0
++            self.together_open_gripper(save_freq=None)
++            self.render_freq = render_freq
+ 
+         self.robot.set_origin_endpose()
+         self.load_actors()
+@@ -387,7 +391,8 @@ class Base_Task(gym.Env):
+         """
+         if not hasattr(self, "robot"):
+             self.robot = Robot(self.scene, self.need_topp, **kwags)
+-            self.robot.set_planner(self.scene)
++            if self.need_plan:
++                self.robot.set_planner(self.scene)
+             self.robot.init_joints()
+         else:
+             self.robot.reset(self.scene, self.need_topp, **kwags)
+diff --git a/envs/robot/planner.py b/envs/robot/planner.py
+index 21ae432..2e12909 100644
+--- a/envs/robot/planner.py
++++ b/envs/robot/planner.py
+@@ -275,6 +275,17 @@ except Exception as e:
+     print('Exception traceback:')
+     traceback.print_exc()
+ 
++    class CuroboPlanner:
++        """Unavailable optional planner placeholder.
++
++        RoboTwin imports this symbol even when planning is disabled.  Keeping the
++        symbol defined lets reset/render-only workflows run without CUDA's nvcc;
++        instantiation still fails loudly instead of silently changing behavior.
++        """
++
++        def __init__(self, *args, **kwargs):
++            raise RuntimeError("CuroboPlanner requires a working Curobo CUDA installation") from e
++
+ 
+ # ********************** MplibPlanner **********************
+ class MplibPlanner:
