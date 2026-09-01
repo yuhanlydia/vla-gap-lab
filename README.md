@@ -44,6 +44,7 @@ The current development machine has a 16 GB RTX A4000. Configs therefore support
 - [x] Umbrella repository and official source pins
 - [x] Track 1: paired LIBERO-Plus rendering, extraction adapter, ridge probes, and causal intervention
 - [x] Track 1: real action-head CUR fault injection on held-out demonstrations
+- [x] Track 1: instruction-matched paired Camera closed-loop pilot (Gate not passed)
 - [ ] Track 1: ControlSkip and LIBERO-Plus evaluation
 - [x] Track 2: real MIKASA simulator + mu-VLA memory/action/proprio smoke path
 - [x] Track 2: memory interventions + inertia metrics
@@ -88,6 +89,7 @@ python3 scripts/render_paired_libero_states.py --task-id 1 --num-demos 10 --num-
 
 - [Track 1 smoke-scale preliminary diagnostic](docs/results/track1_preliminary.md)
 - [Track 1 causal-utilization diagnostic](docs/results/track1_causal_utilization.md)
+- [Track 1 instruction-matched closed-loop pilot](docs/results/track1_local_closed_loop.md)
 - [Track 2 static-memory intervention smoke](docs/results/track2_static_smoke.md)
 - [Track 2 dynamic-tracking Gate-0](docs/results/track2_tracking_gate.md)
 - [Track 3 official Aloha trajectory/hidden-state smoke](docs/results/track3_aloha_smoke.md)

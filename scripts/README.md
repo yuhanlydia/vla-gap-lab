@@ -73,6 +73,25 @@ TRANSFORMERS_NO_TF=1 PYTHONPATH=src .venv-openvla/bin/python \
   scripts/run_openvla_causal_utilization.py --help
 ```
 
+Run a paired closed-loop Camera task while holding the natural-language
+instruction and initial states fixed. Do not omit `--clean-language`: upstream
+variant task metadata includes perturbation bookkeeping in the language field.
+
+```bash
+PYTHONPATH=external/openvla-oft:external/LIBERO-plus:src MUJOCO_GL=egl \
+TRANSFORMERS_NO_TF=1 TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
+.venv-openvla/bin/python scripts/eval_openvla_libero_tasks.py \
+  --checkpoint models/openvla-7b-oft-combined --suite libero_spatial \
+  --task-ids 609 --trials 10 \
+  --clean-bddl pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate.bddl \
+  --clean-language 'pick up the black bowl between the plate and the ramekin and place it on the plate' \
+  --also-benchmark-variant \
+  --output artifacts/libero_closed_loop/camera609_instruction_matched_n10.json
+
+PYTHONPATH=src python3 scripts/analyze_paired_binary.py \
+  artifacts/libero_closed_loop/camera609_instruction_matched_n10.json
+```
+
 ## X-VLA layer capture
 
 Use an isolated environment with the host's CUDA-compatible Torch. Installing
