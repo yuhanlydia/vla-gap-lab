@@ -7,7 +7,7 @@ tracks:
     gate_passed: false
     protocol_complete: false
     method_training_started: false
-    decisive_variant: libero_spatial_task_indices_611_and_612
+    decisive_variant: libero_spatial_task_indices_611_to_613
     evidence:
       control_retention: 0.1111111111
       representation_retention_max: 0.6076238734
@@ -22,9 +22,17 @@ tracks:
         control_retention: 0.0
         representation_retention_max: 0.5952311368
         mcnemar_exact_two_sided_p: 0.00390625
+      third_view_replication:
+        task_index: 613
+        clean_successes: 9
+        shifted_successes: 0
+        episodes: 10
+        control_retention: 0.0
+        representation_retention_max: 0.5847520110
+        mcnemar_exact_two_sided_p: 0.00390625
     protocol_deviations:
       - offline states 480 is below the preregistered minimum of 2000
-      - two adjacent Camera variants were used instead of the four-shift protocol
+      - three adjacent Camera variants were used instead of the four-shift protocol
     reason: control failed, but the action representation did not survive the camera shift
     document: docs/results/track1_camera611_n480.md
 

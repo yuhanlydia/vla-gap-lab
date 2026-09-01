@@ -1,4 +1,4 @@
-# Track 1 large-angle Camera variants (tasks 611 and 612)
+# Track 1 large-angle Camera variants (tasks 611–613)
 
 This replication tests a difficulty-2 Camera variant of the same LIBERO
 Spatial base task used in the earlier task-609 pilot. Natural-language
@@ -89,3 +89,14 @@ The same 6-alpha × 4-split sweep gives maximum representation retention
 **0.595**, again below 0.8. The adjacent-view replication therefore strengthens
 the representation-failure interpretation while leaving the utilization Gate
 closed.
+
+## Third-view replication (task 613)
+
+The next adjacent variant, `view_15_15_100_0_0`, gives the same result: clean
+**9/10**, shifted **0/10**, paired difference **-0.90** with bootstrap interval
+`[-1.00, -0.70]`, and exact McNemar `p=0.00390625`. Its 480-state rerender has
+pixel MAE **30.374/255** and demonstration/base-rerender MAE **4.759/255**.
+Across the same 24 alpha/split configurations, maximum representation
+retention is **0.585**. Thus all three consecutive large-angle variants have a
+strong paired control failure, while all three representation maxima remain
+well below 0.8 (`0.608`, `0.595`, `0.585`).
