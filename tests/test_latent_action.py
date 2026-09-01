@@ -5,6 +5,7 @@ from vla_gap_lab.cache import HiddenCache
 from vla_gap_lab.controlskip import ControlSkip
 from vla_gap_lab.interventions import control_utilization_ratio
 from vla_gap_lab.metrics import latent_action_gate
+from vla_gap_lab.openvla_adapter import extract_layer_action_states
 from vla_gap_lab.probes import fit_layerwise_ridge
 
 
@@ -48,3 +49,11 @@ def test_control_utilization_ratio():
     ratio = control_utilization_ratio(zeros, torch.ones_like(zeros), zeros, 2 * torch.ones_like(zeros))
     torch.testing.assert_close(ratio, torch.full((2,), 0.5))
 
+
+def test_openvla_layer_extraction_uses_only_action_positions():
+    hidden = [torch.arange(2 * 9 * 3).reshape(2, 9, 3).float() + 100 * layer for layer in range(4)]
+    current = torch.tensor([[False, True, False, False, False], [False, True, False, False, False]])
+    following = torch.tensor([[False, False, True, True, False], [False, False, True, True, False]])
+    result = extract_layer_action_states(hidden, [1, 3], 3, current, following)
+    expected_first = hidden[1][:, 3:-1][:, 1:4].mean(dim=1)
+    torch.testing.assert_close(result[:, 0], expected_first)
