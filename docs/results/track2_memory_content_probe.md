@@ -95,3 +95,8 @@ confirming the early persistence–revision representation gap. Identity then
 decays toward chance, and the policy still never succeeds. This completes the
 per-task episode count, but not the preregistered causal gain or multi-task
 coverage; conflict-adaptive refresh therefore remains untrained.
+
+The first-swap result is insensitive to the tested ridge regularization:
+across alpha `{1, 10, 100, 1000}`, identity balanced accuracy ranges
+**0.644–0.654** and current-slot balanced accuracy ranges **0.326–0.328**.
+The separation is therefore not an alpha-100 selection artifact.
