@@ -24,4 +24,3 @@ def control_utilization_ratio(
     action_change = (changed_action - base_action).flatten(1).norm(dim=1)
     probe_change = (changed_probe - base_probe).flatten(1).norm(dim=1)
     return action_change / probe_change.clamp_min(eps)
-

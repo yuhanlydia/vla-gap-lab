@@ -34,7 +34,11 @@ class HiddenCache:
             raise ValueError("layers must have one entry per cached layer")
         if self.sample_id.shape != (n,) or self.shift.shape != (n,):
             raise ValueError("sample_id and shift must have shape [N]")
-        for name, value in (("clean", self.clean), ("shifted", self.shifted), ("actions", self.actions)):
+        for name, value in (
+            ("clean", self.clean),
+            ("shifted", self.shifted),
+            ("actions", self.actions),
+        ):
             if not np.isfinite(value).all():
                 raise ValueError(f"{name} contains NaN or infinity")
 

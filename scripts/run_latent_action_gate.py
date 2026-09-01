@@ -31,7 +31,11 @@ def main() -> None:
     )
     report = {
         "layers": [
-            {"layer": item.layer, "clean": metrics_dict(item.clean), "shifted": metrics_dict(item.shifted)}
+            {
+                "layer": item.layer,
+                "clean": metrics_dict(item.clean),
+                "shifted": metrics_dict(item.shifted),
+            }
             for item in results
         ],
         "gate": gate,
@@ -43,4 +47,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

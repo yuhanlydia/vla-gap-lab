@@ -19,7 +19,9 @@ class LayerProbeResult:
     model: Ridge
 
 
-def matched_split(sample_id: np.ndarray, validation_fraction: float, seed: int) -> tuple[np.ndarray, np.ndarray]:
+def matched_split(
+    sample_id: np.ndarray, validation_fraction: float, seed: int
+) -> tuple[np.ndarray, np.ndarray]:
     """Split by unique simulator state, never by rendered view."""
     unique = np.unique(sample_id)
     rng = np.random.default_rng(seed)
@@ -54,4 +56,3 @@ def fit_layerwise_ridge(
             )
         )
     return results
-

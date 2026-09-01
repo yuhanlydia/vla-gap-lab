@@ -42,7 +42,7 @@ The current development machine has a 16 GB RTX A4000. Configs therefore support
 ## Status
 
 - [x] Umbrella repository and official source pins
-- [ ] Track 1: extraction + ridge probes + causal intervention
+- [x] Track 1: paired LIBERO-Plus rendering, extraction adapter, ridge probes, and causal intervention
 - [ ] Track 1: ControlSkip and LIBERO-Plus evaluation
 - [ ] Track 2: memory interventions + inertia metrics
 - [ ] Track 2: conflict-adaptive refresh
@@ -54,9 +54,20 @@ Validated Track 1 model-load path on the development machine:
 ```bash
 pip install -r requirements/track1-inference.txt
 pip install -e external/openvla-oft --no-deps
-python scripts/smoke_openvla_load.py \
+python3 scripts/smoke_openvla_load.py \
   --checkpoint models/openvla-7b-oft-combined \
   --output artifacts/smoke/openvla_load.json
+```
+
+Generate a small paired clean/shift cache from the official simulator and
+original demonstration states:
+
+```bash
+pip install -r requirements/track1-simulator.txt
+PYTHONPATH=external/LIBERO-plus MUJOCO_GL=egl \
+TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
+python3 scripts/render_paired_libero_states.py --task-id 1 --num-frames 8 \
+  --output artifacts/pairs/libero_spatial_task_1.npz
 ```
 
 ## Sources

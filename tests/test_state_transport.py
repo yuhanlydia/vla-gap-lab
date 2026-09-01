@@ -30,4 +30,3 @@ def test_distillation_detaches_teacher_target():
     loss.backward()
     assert source.grad is not None
     assert target.grad is None
-

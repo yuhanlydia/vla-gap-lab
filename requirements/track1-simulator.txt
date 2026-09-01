@@ -1,0 +1,12 @@
+# Tested simulator stack for the pinned LIBERO-Plus submodule.
+h5py>=3.10
+numpy==1.26.4
+mujoco==2.3.7
+robosuite==1.4.0
+bddl==1.0.1
+gym==0.25.2
+opencv-python==4.11.0.86
+future==0.18.2
+easydict>=1.13
+scikit-image>=0.22
+wand>=0.6

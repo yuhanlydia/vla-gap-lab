@@ -7,7 +7,9 @@ from collections.abc import Sequence
 import torch
 
 
-def action_token_mask(current_action_mask: torch.Tensor, next_actions_mask: torch.Tensor) -> torch.Tensor:
+def action_token_mask(
+    current_action_mask: torch.Tensor, next_actions_mask: torch.Tensor
+) -> torch.Tensor:
     if current_action_mask.shape != next_actions_mask.shape:
         raise ValueError("current and next action masks must have identical shapes")
     if current_action_mask.ndim != 2:
@@ -41,5 +43,6 @@ def extract_layer_action_states(
 
 def assert_action_chunk(actions: torch.Tensor, horizon: int = 8, action_dim: int = 7) -> None:
     if tuple(actions.shape[-2:]) != (horizon, action_dim):
-        raise ValueError(f"expected action chunk [..., {horizon}, {action_dim}], got {tuple(actions.shape)}")
-
+        raise ValueError(
+            f"expected action chunk [..., {horizon}, {action_dim}], got {tuple(actions.shape)}"
+        )

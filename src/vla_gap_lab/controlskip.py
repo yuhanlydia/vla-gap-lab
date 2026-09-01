@@ -9,7 +9,9 @@ from torch import nn
 class ControlSkip(nn.Module):
     """Adds ``beta * B(A(pool(h_l)))`` to a frozen base action chunk."""
 
-    def __init__(self, hidden_dim: int, action_horizon: int = 8, action_dim: int = 7, rank: int = 8):
+    def __init__(
+        self, hidden_dim: int, action_horizon: int = 8, action_dim: int = 7, rank: int = 8
+    ):
         super().__init__()
         self.action_horizon = action_horizon
         self.action_dim = action_dim
@@ -30,7 +32,9 @@ class ControlSkip(nn.Module):
         weight = mask.to(hidden.dtype).unsqueeze(-1)
         return (hidden * weight).sum(dim=1) / weight.sum(dim=1).clamp_min(1)
 
-    def forward(self, base_action: torch.Tensor, hidden: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(
+        self, base_action: torch.Tensor, hidden: torch.Tensor, mask: torch.Tensor | None = None
+    ) -> torch.Tensor:
         expected = (self.action_horizon, self.action_dim)
         if tuple(base_action.shape[-2:]) != expected:
             raise ValueError(f"base_action must end in {expected}")
@@ -44,4 +48,3 @@ def freeze_except_controlskip(model: nn.Module, control_skip: ControlSkip) -> No
         parameter.requires_grad_(False)
     for parameter in control_skip.parameters():
         parameter.requires_grad_(True)
-

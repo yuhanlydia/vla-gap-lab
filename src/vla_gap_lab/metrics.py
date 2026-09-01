@@ -63,4 +63,3 @@ def latent_action_gate(
 
 def metrics_dict(metrics: RegressionMetrics) -> dict:
     return asdict(metrics)
-

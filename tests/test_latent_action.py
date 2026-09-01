@@ -18,7 +18,9 @@ def synthetic_cache() -> HiddenCache:
     shifted = clean.copy()
     shifted[:, 1] += rng.normal(scale=0.02, size=shifted[:, 1].shape)
     shifted[:, 0] = rng.normal(size=shifted[:, 0].shape)
-    return HiddenCache(clean, shifted, actions, np.array([4, 8, 12]), np.arange(n), np.array(["noise"] * n))
+    return HiddenCache(
+        clean, shifted, actions, np.array([4, 8, 12]), np.arange(n), np.array(["noise"] * n)
+    )
 
 
 def test_layerwise_probe_finds_retained_layer(tmp_path):
@@ -46,7 +48,9 @@ def test_controlskip_is_identity_at_initialization():
 
 def test_control_utilization_ratio():
     zeros = torch.zeros(2, 1)
-    ratio = control_utilization_ratio(zeros, torch.ones_like(zeros), zeros, 2 * torch.ones_like(zeros))
+    ratio = control_utilization_ratio(
+        zeros, torch.ones_like(zeros), zeros, 2 * torch.ones_like(zeros)
+    )
     torch.testing.assert_close(ratio, torch.full((2,), 0.5))
 
 

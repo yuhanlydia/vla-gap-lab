@@ -50,4 +50,3 @@ def shared_state_gate(
         "separation_margin": separation_margin,
         "late_embodiment_accuracy": float(late_embodiment),
     }
-

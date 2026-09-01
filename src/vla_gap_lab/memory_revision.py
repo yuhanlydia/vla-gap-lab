@@ -38,7 +38,11 @@ def revision_gate(
     minimum_gain_pp: float = 10.0,
 ) -> dict:
     gain_pp = 100.0 * (oracle_tracking_sr - normal_tracking_sr)
-    return {"passed": gain_pp >= minimum_gain_pp, "oracle_gain_pp": gain_pp, "threshold_pp": minimum_gain_pp}
+    return {
+        "passed": gain_pp >= minimum_gain_pp,
+        "oracle_gain_pp": gain_pp,
+        "threshold_pp": minimum_gain_pp,
+    }
 
 
 class ConflictAdaptiveRefresh(nn.Module):
@@ -60,11 +64,12 @@ class ConflictAdaptiveRefresh(nn.Module):
         memory_summary = previous.mean(dim=1) if previous.ndim == 3 else previous
         evidence_summary = evidence.mean(dim=1) if evidence.ndim == 3 else evidence
         conflict = 1 - F.cosine_similarity(
-            self.memory_projection(memory_summary), self.evidence_projection(evidence_summary), dim=-1
+            self.memory_projection(memory_summary),
+            self.evidence_projection(evidence_summary),
+            dim=-1,
         )
         alpha = torch.sigmoid(self.gate(conflict[:, None]))
         while alpha.ndim < recurrent_candidate.ndim:
             alpha = alpha.unsqueeze(-1)
         memory = (1 - alpha) * recurrent_candidate + alpha * fresh_candidate
         return memory, alpha.flatten(1)[:, 0], conflict
-
