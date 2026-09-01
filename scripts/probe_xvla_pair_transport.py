@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 from sklearn.model_selection import KFold
 
+from vla_gap_lab.multiple_testing import bonferroni, holm
 from vla_gap_lab.state_transport import dual_ridge_predict
 
 
@@ -125,6 +126,12 @@ def main() -> None:
                     "transport_margin": float(totals[3] / totals[1]),
                 }
             )
+    raw_p_values = [row["permutation_p_value"] for row in results]
+    for row, bonferroni_p, holm_p in zip(
+        results, bonferroni(raw_p_values), holm(raw_p_values)
+    ):
+        row["bonferroni_p_value_across_layers"] = bonferroni_p
+        row["holm_p_value_across_layers"] = holm_p
     report = {
         "schema_version": 2,
         "cache": str(args.cache),
@@ -137,6 +144,8 @@ def main() -> None:
         "null_permutations": args.null_permutations,
         "standardize_source": args.standardize,
         "chance_by_fold": float(args.folds / len(seeds)),
+        "multiple_testing_family": "all VLM and control layers in this report",
+        "multiple_testing_family_size": len(results),
         "results": results,
     }
     rendered = json.dumps(report, indent=2)
