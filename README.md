@@ -45,6 +45,7 @@ The current development machine has a 16 GB RTX A4000. Configs therefore support
 - [x] Track 1: paired LIBERO-Plus rendering, extraction adapter, ridge probes, and causal intervention
 - [x] Track 1: real action-head CUR fault injection on held-out demonstrations
 - [x] Track 1: instruction-matched paired Camera closed-loop pilot (Gate not passed)
+- [x] Track 1: LIBERO-Plus filename-derived language metadata audit
 - [ ] Track 1: ControlSkip and LIBERO-Plus evaluation
 - [x] Track 2: real MIKASA simulator + mu-VLA memory/action/proprio smoke path
 - [x] Track 2: memory interventions + inertia metrics
@@ -92,6 +93,7 @@ TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
 - [Track 1 causal-utilization diagnostic](docs/results/track1_causal_utilization.md)
 - [Track 1 instruction-matched closed-loop pilot](docs/results/track1_local_closed_loop.md)
 - [Track 1 480-state Camera representation replication](docs/results/track1_camera_n480.md)
+- [LIBERO-Plus language-metadata audit](docs/results/libero_plus_language_metadata_audit.md)
 - [Track 2 static-memory intervention smoke](docs/results/track2_static_smoke.md)
 - [Track 2 dynamic-tracking Gate-0](docs/results/track2_tracking_gate.md)
 - [Track 3 official Aloha trajectory/hidden-state smoke](docs/results/track3_aloha_smoke.md)

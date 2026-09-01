@@ -93,6 +93,14 @@ PYTHONPATH=src python3 scripts/analyze_paired_binary.py \
   artifacts/libero_closed_loop/camera609_instruction_matched_n10.json
 ```
 
+Audit filename-derived perturbation metadata in LIBERO-Plus instructions:
+
+```bash
+PYTHONPATH=src python3 scripts/audit_libero_plus_language.py \
+  --classification external/LIBERO-plus/libero/libero/benchmark/task_classification.json \
+  --output artifacts/reports/libero_plus_language_audit.json
+```
+
 ## X-VLA layer capture
 
 Use an isolated environment with the host's CUDA-compatible Torch. Installing
