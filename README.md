@@ -87,6 +87,18 @@ TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
 
 ## Sources
 
+Before a long run, record the exact code revisions, dependency versions, and
+input hashes alongside its artifacts:
+
+```bash
+PYTHONPATH=src python3 scripts/capture_run_provenance.py \
+  --repository . --repository external/RoboTwin \
+  --artifact results/gate0_summary.yaml \
+  --output artifacts/reports/run_provenance.json
+```
+
+The report intentionally excludes environment variables and credentials.
+
 - [LIBERO-Plus](https://github.com/sylvestf/LIBERO-plus)
 - [OpenVLA-OFT](https://github.com/moojink/openvla-oft)
 - [MIKASA-Robo](https://github.com/CognitiveAISystems/MIKASA-Robo)
