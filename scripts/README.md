@@ -60,6 +60,19 @@ PYTHONPATH=../../src uv run python ../../scripts/eval_mu_vla_intervention.py \
   --mode normal --episodes 1 --output ../../artifacts/mikasa/remember_color_normal.json
 ```
 
+## OpenVLA causal utilization
+
+Use a separate system-site-packages environment. OpenVLA's Prismatic vision
+guard requires `timm<1`, while the X-VLA environment uses `timm==1.0.12`:
+
+```bash
+python3 -m venv --system-site-packages .venv-openvla
+uv pip install --no-deps -r requirements/track1-causal.txt \
+  --python .venv-openvla/bin/python
+TRANSFORMERS_NO_TF=1 PYTHONPATH=src .venv-openvla/bin/python \
+  scripts/run_openvla_causal_utilization.py --help
+```
+
 ## X-VLA layer capture
 
 Use an isolated environment with the host's CUDA-compatible Torch. Installing

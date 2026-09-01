@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from pathlib import Path
 
 import torch
+from torch import nn
 
 
 def slice_action_token_layers(
@@ -99,3 +101,90 @@ def assert_action_chunk(actions: torch.Tensor, horizon: int = 8, action_dim: int
         raise ValueError(
             f"expected action chunk [..., {horizon}, {action_dim}], got {tuple(actions.shape)}"
         )
+
+
+class _MLPResNetBlock(nn.Module):
+    def __init__(self, dim: int) -> None:
+        super().__init__()
+        self.ffn = nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, dim), nn.ReLU())
+
+    def forward(self, value: torch.Tensor) -> torch.Tensor:
+        return value + self.ffn(value)
+
+
+class L1RegressionActionHead(nn.Module):
+    """Official OpenVLA-OFT L1 head architecture used by released weights."""
+
+    def __init__(self, llm_dim: int, hidden_dim: int | None = None) -> None:
+        super().__init__()
+        hidden_dim = hidden_dim or llm_dim
+        input_dim = llm_dim * 7
+        self.model = nn.Sequential()
+        self.model.layer_norm1 = nn.LayerNorm(input_dim)
+        self.model.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.model.relu = nn.ReLU()
+        self.model.mlp_resnet_blocks = nn.ModuleList(
+            [_MLPResNetBlock(hidden_dim) for _ in range(2)]
+        )
+        self.model.layer_norm2 = nn.LayerNorm(hidden_dim)
+        self.model.fc2 = nn.Linear(hidden_dim, 7)
+
+    def predict_action(self, states: torch.Tensor) -> torch.Tensor:
+        value = states.reshape(states.shape[0], 8, -1)
+        value = self.model.relu(self.model.fc1(self.model.layer_norm1(value)))
+        for block in self.model.mlp_resnet_blocks:
+            value = block(value)
+        return self.model.fc2(self.model.layer_norm2(value))
+
+
+def load_l1_action_head(
+    checkpoint: str | Path, llm_dim: int, *, device: str = "cuda"
+) -> L1RegressionActionHead:
+    head = L1RegressionActionHead(llm_dim).to(device=device, dtype=torch.bfloat16)
+    state = torch.load(
+        Path(checkpoint) / "action_head--300000_checkpoint.pt",
+        map_location="cpu",
+        weights_only=True,
+    )
+    head.load_state_dict({key.removeprefix("module."): value for key, value in state.items()})
+    return head.eval()
+
+
+@torch.inference_mode()
+def predict_with_layer_addition(
+    model,
+    inputs,
+    action_head: nn.Module,
+    *,
+    layer: int,
+    direction: torch.Tensor,
+    alpha: float,
+    unnorm_key: str,
+):
+    """Add one direction to every action token after a transformer block."""
+    blocks = model.language_model.model.layers
+    if layer < 1 or layer > len(blocks):
+        raise IndexError(f"hidden-state layer must be within [1, {len(blocks)}]")
+    input_ids = inputs["input_ids"]
+    prompt_tokens = input_ids.shape[-1] - int(torch.all(input_ids[:, -1] == 29871))
+    action_start = model.vision_backbone.get_num_patches() + prompt_tokens
+    action_stop = action_start + 56
+    direction = direction.to(device=input_ids.device, dtype=torch.bfloat16)
+
+    def hook(_module, _inputs, output):
+        hidden = output[0] if isinstance(output, tuple) else output
+        changed = hidden.clone()
+        changed[:, action_start:action_stop] += alpha * direction
+        if isinstance(output, tuple):
+            return (changed, *output[1:])
+        return changed
+
+    # Transformers exposes hidden_states[-1] after the final RMSNorm, whereas
+    # intermediate entries are block outputs. Match the exact cached coordinate
+    # system at the last layer instead of perturbing its pre-norm block output.
+    target = model.language_model.model.norm if layer == len(blocks) else blocks[layer - 1]
+    handle = target.register_forward_hook(hook)
+    try:
+        return model.predict_action(**inputs, unnorm_key=unnorm_key, action_head=action_head)[0]
+    finally:
+        handle.remove()

@@ -1,0 +1,8 @@
+# Isolated runtime for OpenVLA-OFT causal hooks on the development machine.
+# Torch/bitsandbytes come from the host CUDA environment.
+accelerate==1.2.1
+numpy==1.26.3
+safetensors==0.4.5
+timm==0.9.16
+tokenizers==0.21.4
+transformers==4.51.3

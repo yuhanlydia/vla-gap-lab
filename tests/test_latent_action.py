@@ -5,7 +5,11 @@ from vla_gap_lab.cache import HiddenCache
 from vla_gap_lab.controlskip import ControlSkip
 from vla_gap_lab.interventions import control_utilization_ratio
 from vla_gap_lab.metrics import latent_action_gate
-from vla_gap_lab.openvla_adapter import extract_layer_action_states, slice_action_token_layers
+from vla_gap_lab.openvla_adapter import (
+    L1RegressionActionHead,
+    extract_layer_action_states,
+    slice_action_token_layers,
+)
 from vla_gap_lab.probes import fit_layerwise_ridge
 
 
@@ -68,3 +72,9 @@ def test_inference_action_slice_preserves_tokens():
     actual = slice_action_token_layers(hidden, layers=[0, 2], action_start=3, action_tokens=4)
     assert actual.shape == (2, 2, 4, 3)
     torch.testing.assert_close(actual[:, 1], hidden[2][:, 3:7])
+
+
+def test_openvla_regression_head_preserves_chunk_shape():
+    head = L1RegressionActionHead(llm_dim=8, hidden_dim=16)
+    output = head.predict_action(torch.randn(2, 56, 8))
+    assert output.shape == (2, 8, 7)
