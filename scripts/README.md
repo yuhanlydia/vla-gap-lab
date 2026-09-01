@@ -92,6 +92,15 @@ TRANSFORMERS_NO_TF=1 PYTHONPATH=src .venv-openvla/bin/python \
   scripts/run_openvla_causal_utilization.py --help
 ```
 
+Use `--condition clean` and `--condition shifted` with identical intervention
+settings, then compare the reports with state-cluster bootstrap uncertainty:
+
+```bash
+PYTHONPATH=src python3 scripts/compare_causal_utilization.py \
+  artifacts/reports/causal_clean.json artifacts/reports/causal_shifted.json \
+  --metric cur --output artifacts/reports/causal_clean_vs_shifted.json
+```
+
 Run a paired closed-loop Camera task while holding the natural-language
 instruction and initial states fixed. Do not omit `--clean-language`: upstream
 variant task metadata includes perturbation bookkeeping in the language field.

@@ -31,6 +31,25 @@ The causal effect is nonzero and approximately linear across ±1/±2 standard de
 
 It is not yet sufficient to train ControlSkip. The separate representation-retention Gate-0 used only 80 states and Camera retention was 0.717, below the preregistered 0.8 threshold. The correct next step is a larger, multi-task causal replication and local closed-loop control retention—not method training based on this result alone.
 
+## Large-angle Camera clean/shift control
+
+Task 611 supplies the requested failure case (9/10 clean versus 1/10 shifted),
+but its 480-state representation retention reaches only 0.608. At layer 4,
+12 held-out trajectories × 7 action coordinates × 4 intervention magnitudes
+give:
+
+| Condition | Mean CUR | Median CUR |
+|---|---:|---:|
+| Clean | 0.02097 | 0.01826 |
+| Camera shift | 0.01806 | 0.01563 |
+
+The paired shifted-minus-clean mean is -0.00291 with a state-cluster bootstrap
+95% interval of [-0.00519, -0.00073]. The shift modestly reduces utilization,
+but absolute CUR is already very low in the clean condition where closed-loop
+success is high. Low CUR is therefore not, by itself, a failure-specific
+indicator. Together with the failed representation-retention Gate, this result
+does not justify ControlSkip training.
+
 ## Reproduction
 
 ```bash

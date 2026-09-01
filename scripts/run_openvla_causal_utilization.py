@@ -25,6 +25,7 @@ def main() -> None:
     parser.add_argument("--layer", type=int, required=True)
     parser.add_argument("--action-index", type=int, nargs="+", default=[0])
     parser.add_argument("--direction-mode", choices=["probe", "random"], default="probe")
+    parser.add_argument("--condition", choices=["clean", "shifted"], default="shifted")
     parser.add_argument("--alpha-multipliers", type=float, nargs="+", default=[-2, -1, 1, 2])
     parser.add_argument("--max-test-samples", type=int, default=12)
     parser.add_argument("--seed", type=int, default=42)
@@ -40,7 +41,7 @@ def main() -> None:
     groups = hidden["sample_id"]
     train_indices, test_indices = next(
         GroupShuffleSplit(n_splits=1, test_size=0.25, random_state=args.seed).split(
-            hidden["shifted"], groups=groups
+            hidden[args.condition], groups=groups
         )
     )
     train_x = hidden["clean"][train_indices, layer_col]
@@ -88,7 +89,7 @@ def main() -> None:
     unnorm_key = f"{metadata['suite']}_no_noops"
     records = []
     for index in test_indices:
-        inputs = processor(prompt, Image.fromarray(pairs["shifted_agent"][index])).to(
+        inputs = processor(prompt, Image.fromarray(pairs[f"{args.condition}_agent"][index])).to(
             "cuda", dtype=torch.bfloat16
         )
         baseline = predict_with_layer_addition(
@@ -100,7 +101,7 @@ def main() -> None:
             alpha=0.0,
             unnorm_key=unnorm_key,
         )
-        hidden_row = hidden["shifted"][index, layer_col]
+        hidden_row = hidden[args.condition][index, layer_col]
         probe_before = probe.predict(hidden_row[None])[0]
         for action_index, direction in directions.items():
             for multiplier in args.alpha_multipliers:
@@ -149,6 +150,7 @@ def main() -> None:
         "layer": args.layer,
         "action_indices": args.action_index,
         "direction_mode": args.direction_mode,
+        "condition": args.condition,
         "projected_train_std": projected_stds,
         "train_groups": sorted(set(groups[train_indices].tolist())),
         "test_groups": sorted(set(groups[test_indices].tolist())),
