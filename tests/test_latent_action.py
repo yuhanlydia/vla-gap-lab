@@ -5,7 +5,7 @@ from vla_gap_lab.cache import HiddenCache
 from vla_gap_lab.controlskip import ControlSkip
 from vla_gap_lab.interventions import control_utilization_ratio
 from vla_gap_lab.metrics import latent_action_gate
-from vla_gap_lab.openvla_adapter import extract_layer_action_states
+from vla_gap_lab.openvla_adapter import extract_layer_action_states, slice_action_token_layers
 from vla_gap_lab.probes import fit_layerwise_ridge
 
 
@@ -61,3 +61,10 @@ def test_openvla_layer_extraction_uses_only_action_positions():
     result = extract_layer_action_states(hidden, [1, 3], 3, current, following)
     expected_first = hidden[1][:, 3:-1][:, 1:4].mean(dim=1)
     torch.testing.assert_close(result[:, 0], expected_first)
+
+
+def test_inference_action_slice_preserves_tokens():
+    hidden = [torch.arange(2 * 10 * 3).reshape(2, 10, 3) + 100 * index for index in range(3)]
+    actual = slice_action_token_layers(hidden, layers=[0, 2], action_start=3, action_tokens=4)
+    assert actual.shape == (2, 2, 4, 3)
+    torch.testing.assert_close(actual[:, 1], hidden[2][:, 3:7])
