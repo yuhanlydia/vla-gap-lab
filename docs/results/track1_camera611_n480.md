@@ -1,4 +1,4 @@
-# Track 1 large-angle Camera variant (task 611)
+# Track 1 large-angle Camera variants (tasks 611 and 612)
 
 This replication tests a difficulty-2 Camera variant of the same LIBERO
 Spatial base task used in the earlier task-609 pilot. Natural-language
@@ -66,5 +66,26 @@ The failure is therefore better described as a representation robustness
 failure than a latent-to-action utilization failure. ControlSkip remains
 untrained.
 
-This is still a single-task 10-episode closed-loop pilot with 4-bit inference,
-not a category-level leaderboard reproduction.
+This remains a single semantic task with 10 paired episodes per variant and
+4-bit inference, not a category-level leaderboard reproduction.
+
+## Adjacent-view replication (task 612)
+
+We repeated the exact paired protocol on the adjacent difficulty-2 Camera
+variant `view_14_15_100_0_0` (benchmark task index 612).
+
+| Condition | Task 611 | Task 612 |
+|---|---:|---:|
+| Clean BDDL | 9/10 | 9/10 |
+| Shifted Camera | 1/10 | 0/10 |
+| Control retention | 0.111 | 0.000 |
+| Paired difference | -0.80 | -0.90 |
+| Exact McNemar p | 0.0078125 | 0.00390625 |
+
+For task 612, the paired bootstrap 95% interval for shifted minus clean SR is
+`[-1.00, -0.70]`. Its independently rendered 480-state cache has clean/shift
+pixel MAE **28.988/255** and demonstration/base-rerender MAE **4.859/255**.
+The same 6-alpha × 4-split sweep gives maximum representation retention
+**0.595**, again below 0.8. The adjacent-view replication therefore strengthens
+the representation-failure interpretation while leaving the utilization Gate
+closed.

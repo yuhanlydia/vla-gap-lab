@@ -116,7 +116,7 @@ The report intentionally excludes environment variables and credentials.
 - [Track 1 causal-utilization diagnostic](docs/results/track1_causal_utilization.md)
 - [Track 1 instruction-matched closed-loop pilot](docs/results/track1_local_closed_loop.md)
 - [Track 1 480-state Camera representation replication](docs/results/track1_camera_n480.md)
-- [Track 1 large-angle Camera failure replication](docs/results/track1_camera611_n480.md)
+- [Track 1 large-angle Camera failure and adjacent-view replication](docs/results/track1_camera611_n480.md)
 - [LIBERO-Plus language-metadata audit](docs/results/libero_plus_language_metadata_audit.md)
 - [Track 2 static-memory intervention smoke](docs/results/track2_static_smoke.md)
 - [Track 2 dynamic-tracking Gate-0](docs/results/track2_tracking_gate.md)
