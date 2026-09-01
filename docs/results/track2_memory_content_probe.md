@@ -75,3 +75,23 @@ fails after the first swap, then persistent identity also decays before action.
 
 This replication addresses token pooling but not the causal-method Gate, which
 remains closed.
+
+## Canonical 50-episode replication
+
+We extended the strided-token run to the benchmark's canonical 50 deterministic
+seeds (3,000 states). The released policy succeeded in **0/50** episodes. With
+the same episode-held-out four-fold probe and alpha 100:
+
+| Segment | Target identity | Current target slot |
+|---|---:|---:|
+| Cue | 0.761 [0.689, 0.819] | 0.761 [0.689, 0.819] |
+| Shuffle, 0 swaps | 0.903 [0.837, 0.964] | 0.903 [0.837, 0.964] |
+| Shuffle, 1 swap | **0.651 [0.531, 0.776]** | **0.326 [0.240, 0.429]** |
+| Shuffle, 2 swaps | 0.416 [0.260, 0.569] | 0.243 [0.158, 0.333] |
+| Manipulation | 0.423 [0.341, 0.514] | 0.303 [0.223, 0.391] |
+
+The first-swap intervals remain non-overlapping at twice the episode count,
+confirming the early persistence–revision representation gap. Identity then
+decays toward chance, and the policy still never succeeds. This completes the
+per-task episode count, but not the preregistered causal gain or multi-task
+coverage; conflict-adaptive refresh therefore remains untrained.

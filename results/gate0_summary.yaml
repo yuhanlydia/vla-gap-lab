@@ -34,14 +34,15 @@ tracks:
     method_training_started: false
     decisive_task: ShellGameShuffleTouch-VLA-v0
     evidence:
-      episodes: 24
+      episodes: 50
       successes: 0
-      first_swap_identity_balanced_accuracy: 0.743
-      first_swap_slot_balanced_accuracy: 0.343
+      first_swap_identity_balanced_accuracy: 0.651
+      first_swap_identity_bootstrap_95_ci: [0.531, 0.776]
+      first_swap_slot_balanced_accuracy: 0.326
+      first_swap_slot_bootstrap_95_ci: [0.240, 0.429]
       causal_success_gain_pp: 0.0
       required_causal_success_gain_pp: 10.0
     protocol_deviations:
-      - episodes 24 is below the canonical 50 episodes per task
       - only one dynamic tracking task was evaluated causally
     reason: representation diagnostic supports early revision failure, but no valid causal success gain
     document: docs/results/track2_memory_content_probe.md
