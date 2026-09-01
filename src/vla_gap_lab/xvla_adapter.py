@@ -56,3 +56,42 @@ def capture_xvla_action_layers(
         raise RuntimeError("not every requested X-VLA layer executed")
     features = torch.stack([captured[layer].mean(dim=1) for layer in layers], dim=1)
     return action, features
+
+
+@torch.inference_mode()
+def capture_xvla_joint_layers(
+    model,
+    model_inputs: dict[str, torch.Tensor],
+    *,
+    domain_id: int,
+    proprio: torch.Tensor,
+    vlm_layers: Sequence[int],
+    action_layers: Sequence[int],
+    steps: int = 1,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Capture Florence encoder and domain-conditioned action-stack layers."""
+    encoder = model.vlm.language_model.model.encoder.layers
+    if any(layer < 0 or layer >= len(encoder) for layer in vlm_layers):
+        raise IndexError("VLM layer out of bounds")
+    vlm_captured: dict[int, torch.Tensor] = {}
+    handles = []
+    for layer in vlm_layers:
+
+        def hook(_module, _inputs, output, layer=layer):
+            vlm_captured[layer] = _tensor_output(output).detach()
+
+        handles.append(encoder[layer].register_forward_hook(hook))
+    try:
+        action, action_features = capture_xvla_action_layers(
+            model,
+            model_inputs,
+            domain_id=domain_id,
+            proprio=proprio,
+            layers=action_layers,
+            steps=steps,
+        )
+    finally:
+        for handle in handles:
+            handle.remove()
+    vlm_features = torch.stack([vlm_captured[layer].mean(dim=1) for layer in vlm_layers], dim=1)
+    return action, vlm_features, action_features

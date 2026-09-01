@@ -85,3 +85,4 @@ python3 scripts/render_paired_libero_states.py --task-id 1 --num-demos 10 --num-
 
 - [Track 1 smoke-scale preliminary diagnostic](docs/results/track1_preliminary.md)
 - [Track 2 static-memory intervention smoke](docs/results/track2_static_smoke.md)
+- [Track 3 official Aloha trajectory/hidden-state smoke](docs/results/track3_aloha_smoke.md)

@@ -10,3 +10,6 @@
 [submodule "external/MIKASA-Robo"]
 	path = external/MIKASA-Robo
 	url = https://github.com/CognitiveAISystems/MIKASA-Robo.git
+[submodule "external/RoboTwin"]
+	path = external/RoboTwin
+	url = https://github.com/RoboTwin-Platform/RoboTwin.git
