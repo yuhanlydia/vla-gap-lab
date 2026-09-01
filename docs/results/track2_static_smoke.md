@@ -2,7 +2,7 @@
 
 Date: 2026-09-01
 
-This is a 10-seed causal pilot, not a benchmark-wide result. The released mu-VLA
+This is a single-task causal diagnostic, not a benchmark-wide result. The released mu-VLA
 M64/K2 checkpoint was evaluated closed-loop on `RememberColor3-VLA-v0` with
 receding horizon (one action per model call) and memory reset at every episode.
 
@@ -20,3 +20,19 @@ This is direct evidence that persistent history is useful on static recall and
 also confirms why a full reset is not a valid “oracle” for hidden-object
 tracking: it destroys the identity that must be retained. The earlier 1/3-seed
 implementation smoke is superseded by this run.
+
+## Canonical 50-seed normal/freeze replication
+
+The first 10 seeds overstated freeze performance. Extending normal and freeze
+to the same 50 seeds gives:
+
+| Intervention | Success | Paired difference vs normal | Exact McNemar p |
+|---|---:|---:|---:|
+| Normal | 48/50 (96%) | — | — |
+| Freeze after step 5 | 32/50 (64%) | -0.32 | 0.00014496 |
+
+The paired bootstrap 95% interval is `[-0.46, -0.18]`, with 17 normal-only and
+one freeze-only success. Thus the claim that post-cue freezing is harmless is
+superseded: continued recurrent updates matter even in this nominally static
+recall task. The separate reset result remains a valid negative control that
+clearing persistent history is harmful, but it is currently only n=10.

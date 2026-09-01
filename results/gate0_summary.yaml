@@ -52,9 +52,12 @@ tracks:
       required_causal_success_gain_pp: 10.0
       static_recall_control:
         task: RememberColor3-VLA-v0
-        episodes: 10
-        normal_successes: 10
-        freeze_successes: 9
+        normal_freeze_episodes: 50
+        normal_successes: 48
+        freeze_successes: 32
+        freeze_minus_normal_bootstrap_95_ci: [-0.46, -0.18]
+        freeze_mcnemar_exact_two_sided_p: 0.0001449585
+        reset_episodes: 10
         reset_successes: 2
         reset_minus_normal_bootstrap_95_ci: [-1.0, -0.5]
         reset_mcnemar_exact_two_sided_p: 0.0078125
