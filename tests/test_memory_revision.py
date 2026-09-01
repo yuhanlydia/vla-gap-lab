@@ -16,12 +16,16 @@ def test_memory_interventions_are_causally_distinct():
     previous, evidence, initial = torch.tensor([[2.0]]), torch.tensor([[3.0]]), torch.zeros(1, 1)
     assert memory_intervention("normal", previous, evidence, initial, updater).item() == 5
     assert memory_intervention("freeze", previous, evidence, initial, updater).item() == 2
+    assert memory_intervention("reset_refresh", previous, evidence, initial, updater).item() == 3
+    # Backward-compatible alias for already produced pilot artifacts.
     assert memory_intervention("oracle_refresh", previous, evidence, initial, updater).item() == 3
 
 
 def test_inertia_and_gate():
     torch.testing.assert_close(memory_inertia(torch.ones(1, 2), torch.ones(1, 2)), torch.ones(1))
-    assert revision_gate(0.4, 0.51)["passed"] is True
+    gate = revision_gate(0.4, 0.51)
+    assert gate["passed"] is True
+    assert gate["reset_gain_pp"] > 10.0
 
 
 def test_refresh_is_convex_blend():

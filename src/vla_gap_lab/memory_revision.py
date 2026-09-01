@@ -18,14 +18,14 @@ def memory_intervention(
     initial: torch.Tensor,
     updater: MemoryUpdater,
 ) -> torch.Tensor:
-    """Apply normal, freeze, or diagnostic oracle-refresh update."""
+    """Apply normal, freeze, or reset-from-initial-memory update."""
     if mode == "normal":
         return updater(previous, evidence)
     if mode == "freeze":
         return previous
-    if mode == "oracle_refresh":
+    if mode in {"reset_refresh", "oracle_refresh"}:
         return updater(initial, evidence)
-    raise ValueError("mode must be normal, freeze, or oracle_refresh")
+    raise ValueError("mode must be normal, freeze, or reset_refresh")
 
 
 def memory_inertia(before: torch.Tensor, after: torch.Tensor) -> torch.Tensor:
@@ -34,13 +34,13 @@ def memory_inertia(before: torch.Tensor, after: torch.Tensor) -> torch.Tensor:
 
 def revision_gate(
     normal_tracking_sr: float,
-    oracle_tracking_sr: float,
+    reset_tracking_sr: float,
     minimum_gain_pp: float = 10.0,
 ) -> dict:
-    gain_pp = 100.0 * (oracle_tracking_sr - normal_tracking_sr)
+    gain_pp = 100.0 * (reset_tracking_sr - normal_tracking_sr)
     return {
         "passed": gain_pp >= minimum_gain_pp,
-        "oracle_gain_pp": gain_pp,
+        "reset_gain_pp": gain_pp,
         "threshold_pp": minimum_gain_pp,
     }
 

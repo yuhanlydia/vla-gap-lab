@@ -3,9 +3,8 @@ seed: 42
 episodes_per_task: 50
 checkpoint:
   memory: mu-vla/mu-vla-openvla-oft-mikasa-robo-5-tasks-m64-k2-tbptt
-interventions: [normal, freeze, oracle_refresh]
+interventions: [normal, freeze, reset_refresh]
 static_tasks: [ShellGameTouch-VLA-v0, ShellGamePush-VLA-v0, RememberColor5-VLA-v0, RememberShape5-VLA-v0]
 tracking_tasks: [ShellGameShuffleTouch-VLA-v0, ShellGameShuffleTouch-Long-VLA-v0, ShellGameShuffleColorLampTouch-VLA-v0]
 gate:
-  oracle_refresh_gain_pp_min: 10
-
+  reset_refresh_gain_pp_min: 10

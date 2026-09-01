@@ -35,6 +35,12 @@ environment check -> data/model manifest -> smoke test -> Gate-0 diagnostic
 
 No result is reported as an official benchmark result unless it comes from the official simulator protocol. Offline metrics and synthetic smoke tests are labeled separately.
 
+Run the first-party CPU checks without traversing pinned upstream submodules:
+
+```bash
+scripts/check.sh
+```
+
 ## Hardware note
 
 The current development machine has a 16 GB RTX A4000. Configs therefore support hidden-state caching, batch size 1, CPU offload, and optional 4-bit model loading. The target reference setup remains a 24 GB GPU. A failed memory preflight is recorded as a hardware block rather than silently changing the scientific protocol.

@@ -29,7 +29,7 @@ Cosines are computed in float32. Earlier bfloat16 values slightly above 1.0 were
 
 ## Gate decision
 
-The preregistered continuation criterion was at least +10 percentage points from oracle refresh on Tracking. It did not pass: cue-end refresh is 0/3 and normal is 0/10. Conflict-Adaptive Refresh training must not start from this evidence.
+The original continuation criterion was at least +10 percentage points from the intervention then called oracle refresh. It did not pass: cue-end reset refresh is 0/3 and normal is 0/10. The intervention has since been renamed because resetting to initial memory also erases hidden target identity. Conflict-Adaptive Refresh training must not start from this evidence.
 
 There is also a conceptual issue with full refresh on this particular task: after the ball is hidden, the current frame does not identify the target cup. Clearing memory at cue end destroys target identity rather than providing a true oracle revision. A scientifically valid follow-up would preserve identity while revising location, for example with factorized/token-selective memory interventions or privileged simulator labels used only for diagnostics. It should not relabel full reset as an oracle.
 

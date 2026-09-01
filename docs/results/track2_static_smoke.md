@@ -16,6 +16,6 @@ The seeds start at the checkpoint's published evaluation seed `4242424242`.
 The sample is deliberately too small for claims. It nevertheless validates
 that interventions alter the actual recurrent state and gives the expected
 negative control: discarding old memory after the visual cue destroys static
-recall. The oracle-refresh Gate must therefore be evaluated only at a
+recall. The reset-refresh diagnostic must therefore be evaluated only at a
 predefined revision event where current evidence can identify the revised
 state; applying it indiscriminately is not a valid diagnostic.

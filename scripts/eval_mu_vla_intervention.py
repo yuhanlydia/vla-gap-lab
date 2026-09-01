@@ -26,7 +26,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--task", required=True)
-    parser.add_argument("--mode", choices=["normal", "freeze", "oracle_refresh"], default="normal")
+    parser.add_argument("--mode", choices=["normal", "freeze", "reset_refresh"], default="normal")
     parser.add_argument("--revision-step", type=int, default=None)
     parser.add_argument("--revision-event", choices=["cue_end", "shuffle_end"], default=None)
     parser.add_argument("--episodes", type=int, default=1)

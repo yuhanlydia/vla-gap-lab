@@ -143,8 +143,8 @@ class MuVLAPolicy:
         revision_step: int | None = None,
         load_in_4bit: bool = True,
     ) -> None:
-        if mode not in {"normal", "freeze", "oracle_refresh"}:
-            raise ValueError("mode must be normal, freeze, or oracle_refresh")
+        if mode not in {"normal", "freeze", "reset_refresh", "oracle_refresh"}:
+            raise ValueError("mode must be normal, freeze, or reset_refresh")
         install_prismatic_remote_stubs()
         from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
 
@@ -231,7 +231,7 @@ class MuVLAPolicy:
         inputs, proprio = self._inputs(obs)
         previous = self.memory
         input_memory = previous
-        if self.mode == "oracle_refresh" and self.step == self.revision_step:
+        if self.mode in {"reset_refresh", "oracle_refresh"} and self.step == self.revision_step:
             input_memory = self.initial_memory
         actions, _, candidate = self.model.predict_action(
             **inputs,
