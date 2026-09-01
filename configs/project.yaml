@@ -1,0 +1,8 @@
+project: vla-gap-lab
+seed: 42
+artifact_root: artifacts
+tracks:
+  - latent_action
+  - memory_revision
+  - state_transport
+

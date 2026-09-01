@@ -1,0 +1,9 @@
+[submodule "external/LIBERO-plus"]
+	path = external/LIBERO-plus
+	url = https://github.com/sylvestf/LIBERO-plus.git
+[submodule "external/openvla-oft"]
+	path = external/openvla-oft
+	url = https://github.com/moojink/openvla-oft.git
+[submodule "external/X-VLA"]
+	path = external/X-VLA
+	url = https://github.com/2toinf/X-VLA.git
