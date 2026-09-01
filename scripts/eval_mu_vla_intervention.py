@@ -28,6 +28,7 @@ def main() -> None:
     parser.add_argument("--task", required=True)
     parser.add_argument("--mode", choices=["normal", "freeze", "oracle_refresh"], default="normal")
     parser.add_argument("--revision-step", type=int, default=None)
+    parser.add_argument("--revision-event", choices=["cue_end", "shuffle_end"], default=None)
     parser.add_argument("--episodes", type=int, default=1)
     parser.add_argument("--start-seed", type=int, default=4242424242)
     parser.add_argument("--output", type=Path, required=True)
@@ -53,6 +54,15 @@ def main() -> None:
         for episode_index in range(args.episodes):
             obs, _ = env.reset(seed=args.start_seed + episode_index)
             policy.reset()
+            cue_steps = int(scalar(getattr(env.unwrapped, "cue_steps_per_env", [0])))
+            shuffle_steps = int(scalar(getattr(env.unwrapped, "shuffle_steps_per_env", [0])))
+            swaps = int(scalar(getattr(env.unwrapped, "num_swaps_per_env", [0])))
+            if args.revision_event == "cue_end":
+                policy.revision_step = cue_steps
+            elif args.revision_event == "shuffle_end":
+                policy.revision_step = cue_steps + shuffle_steps
+            else:
+                policy.revision_step = args.revision_step
             success, total_reward = False, 0.0
             for step in range(int(env.max_episode_steps)):
                 action = policy.forward(obs).to(env.unwrapped.device)
@@ -67,8 +77,14 @@ def main() -> None:
                     "success": success,
                     "steps": step + 1,
                     "return": total_reward,
+                    "cue_steps": cue_steps,
+                    "shuffle_steps": shuffle_steps,
+                    "num_swaps": swaps,
+                    "effective_revision_step": policy.revision_step,
                     "inertia_mean": float(np.mean(policy.inertia)),
                     "inertia_by_step": policy.inertia,
+                    "candidate_inertia_by_step": policy.candidate_inertia,
+                    "candidate_update_norm_by_step": policy.update_norm,
                 }
             )
     finally:
@@ -77,6 +93,7 @@ def main() -> None:
         "task": args.task,
         "mode": args.mode,
         "revision_step": args.revision_step,
+        "revision_event": args.revision_event,
         "episodes": episodes,
         "success_rate": float(np.mean([episode["success"] for episode in episodes])),
     }

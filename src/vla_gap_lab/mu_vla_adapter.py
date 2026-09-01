@@ -200,12 +200,16 @@ class MuVLAPolicy:
         self.mode = mode
         self.revision_step = revision_step
         self.inertia: list[float] = []
+        self.candidate_inertia: list[float] = []
+        self.update_norm: list[float] = []
         self.reset()
 
     def reset(self) -> None:
         self.memory = self.initial_memory.clone()
         self.step = 0
         self.inertia.clear()
+        self.candidate_inertia.clear()
+        self.update_norm.clear()
 
     def _inputs(self, obs: dict[str, Any]) -> tuple[Any, np.ndarray]:
         rgb = obs["rgb"].detach().cpu().numpy()[0]
@@ -246,7 +250,21 @@ class MuVLAPolicy:
         )
         self.memory = previous if freeze else candidate
         self.inertia.append(
-            float(F.cosine_similarity(previous.flatten(1), self.memory.flatten(1)).item())
+            float(
+                F.cosine_similarity(
+                    previous.float().flatten(1), self.memory.float().flatten(1)
+                ).item()
+            )
+        )
+        self.candidate_inertia.append(
+            float(
+                F.cosine_similarity(
+                    previous.float().flatten(1), candidate.float().flatten(1)
+                ).item()
+            )
+        )
+        self.update_norm.append(
+            float(torch.linalg.vector_norm(candidate.float() - previous.float()))
         )
         self.step += 1
         return torch.from_numpy(np.asarray(actions[:1], dtype=np.float32))
