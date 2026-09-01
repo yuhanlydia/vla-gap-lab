@@ -2,7 +2,7 @@ import pytest
 import torch
 from torch import nn
 
-from vla_gap_lab.xvla_adapter import capture_xvla_action_layers
+from vla_gap_lab.xvla_adapter import capture_xvla_action_layers, pool_token_features
 
 
 class ToyXVLA(nn.Module):
@@ -29,3 +29,13 @@ def test_xvla_layer_capture_and_bounds():
     assert states.shape == (2, 2, 4)
     with pytest.raises(IndexError):
         capture_xvla_action_layers(model, {}, domain_id=2, proprio=torch.zeros(2, 4), layers=[3])
+
+
+def test_summary_pooling_preserves_four_token_statistics():
+    tokens = torch.arange(2 * 5 * 4, dtype=torch.float32).reshape(2, 5, 4)
+    summary = pool_token_features(tokens, "summary")
+    assert summary.shape == (2, 4, 4)
+    torch.testing.assert_close(summary[:, 0], tokens.mean(dim=1))
+    torch.testing.assert_close(summary[:, 1], tokens.std(dim=1))
+    torch.testing.assert_close(summary[:, 2], tokens[:, 0])
+    torch.testing.assert_close(summary[:, 3], tokens[:, -1])

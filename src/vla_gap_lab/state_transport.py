@@ -19,6 +19,34 @@ def transport(source: np.ndarray, mapping: np.ndarray) -> np.ndarray:
     return source @ mapping
 
 
+def dual_ridge_predict(
+    train_source: np.ndarray,
+    train_target: np.ndarray,
+    test_source: np.ndarray,
+    *,
+    alpha: float,
+    standardize: bool = True,
+) -> np.ndarray:
+    """Predict a high-dimensional target via an N×N ridge solve.
+
+    This is equivalent to multi-output ridge with an intercept, but avoids a
+    potentially enormous feature-by-target coefficient matrix when N is small.
+    """
+    train_source = np.asarray(train_source, dtype=np.float64)
+    train_target = np.asarray(train_target, dtype=np.float64)
+    test_source = np.asarray(test_source, dtype=np.float64)
+    source_mean = train_source.mean(axis=0)
+    target_mean = train_target.mean(axis=0)
+    source_scale = train_source.std(axis=0) if standardize else np.ones(train_source.shape[1])
+    source_scale = np.where(source_scale > 1e-12, source_scale, 1.0)
+    train_x = (train_source - source_mean) / source_scale
+    test_x = (test_source - source_mean) / source_scale
+    train_y = train_target - target_mean
+    kernel = train_x @ train_x.T
+    dual = np.linalg.solve(kernel + alpha * np.eye(len(kernel)), train_y)
+    return (test_x @ train_x.T @ dual + target_mean).astype(np.float32)
+
+
 def state_distillation_loss(
     action_loss: torch.Tensor,
     source_state: torch.Tensor,

@@ -132,3 +132,22 @@ TRANSFORMERS_NO_TF=1 .venv-xvla/bin/python scripts/smoke_xvla_layers.py \
 The smoke captures action-token states after seven of the 24 flow-transformer
 blocks. This is the domain-conditioned control stack; Florence encoder layers
 will be captured separately for the domain-agnostic task-state probe.
+
+For reset-pair transport, summary pooling retains token mean/std and endpoint
+tokens. The probe uses an N×N dual ridge solve and reports an empirical
+permutation p-value:
+
+```bash
+TRANSFORMERS_NO_TF=1 PYTHONPATH=src .venv-xvla/bin/python \
+  scripts/extract_xvla_robotwin_pairs.py \
+  --checkpoint models/x-vla-robotwin2 \
+  --pairs artifacts/robotwin/blocks_ranking_rgb_aloha_franka_reset_32.npz \
+  --pooling summary \
+  --output artifacts/hidden/xvla_blocks_ranking_rgb_aloha_franka_reset_32_summary.npz
+
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=src \
+python3 scripts/probe_xvla_pair_transport.py \
+  --cache artifacts/hidden/xvla_blocks_ranking_rgb_aloha_franka_reset_32_summary.npz \
+  --alpha 100 --no-standardize --null-permutations 500 \
+  --output artifacts/results/xvla_summary_n32_a100_raw_null500.json
+```

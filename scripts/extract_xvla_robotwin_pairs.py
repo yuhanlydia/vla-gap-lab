@@ -22,6 +22,7 @@ def main() -> None:
         "--instruction", default="rank the red, green, and blue blocks in RGB order"
     )
     parser.add_argument("--domain-id", type=int, default=6)
+    parser.add_argument("--pooling", choices=["mean", "summary"], default="summary")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     source = np.load(args.pairs, allow_pickle=False)
@@ -48,6 +49,7 @@ def main() -> None:
                 proprio=proprio_tensor,
                 vlm_layers=vlm_layers,
                 action_layers=action_layers,
+                pooling=args.pooling,
             )
             rows.append(
                 (
@@ -64,6 +66,7 @@ def main() -> None:
         "vlm_layers": vlm_layers,
         "action_layers": action_layers,
         "instruction": args.instruction,
+        "pooling": args.pooling,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(

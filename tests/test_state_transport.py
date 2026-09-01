@@ -1,7 +1,11 @@
 import numpy as np
 import torch
+from sklearn.linear_model import Ridge
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 from vla_gap_lab.state_transport import (
+    dual_ridge_predict,
     fit_orthogonal_transport,
     shared_state_gate,
     state_distillation_loss,
@@ -15,6 +19,16 @@ def test_procrustes_recovers_rotation():
     target = source @ q
     mapping = fit_orthogonal_transport(source, target)
     np.testing.assert_allclose(source @ mapping, target, atol=1e-5)
+
+
+def test_dual_ridge_matches_sklearn_multioutput_prediction():
+    rng = np.random.default_rng(9)
+    train_x = rng.normal(size=(12, 30))
+    train_y = rng.normal(size=(12, 20))
+    test_x = rng.normal(size=(4, 30))
+    expected = make_pipeline(StandardScaler(), Ridge(alpha=7.0)).fit(train_x, train_y)
+    actual = dual_ridge_predict(train_x, train_y, test_x, alpha=7.0, standardize=True)
+    np.testing.assert_allclose(actual, expected.predict(test_x), rtol=1e-5, atol=1e-5)
 
 
 def test_shared_state_gate_detects_mid_layer_crossover():

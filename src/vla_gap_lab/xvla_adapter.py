@@ -7,6 +7,17 @@ from collections.abc import Sequence
 import torch
 
 
+def pool_token_features(tokens: torch.Tensor, pooling: str) -> torch.Tensor:
+    """Pool token sequences without silently discarding token heterogeneity."""
+    if pooling == "mean":
+        return tokens.mean(dim=1)
+    if pooling == "summary":
+        return torch.stack(
+            [tokens.mean(dim=1), tokens.std(dim=1), tokens[:, 0], tokens[:, -1]], dim=1
+        )
+    raise ValueError("pooling must be 'mean' or 'summary'")
+
+
 def _tensor_output(output) -> torch.Tensor:
     if torch.is_tensor(output):
         return output
@@ -24,6 +35,7 @@ def capture_xvla_action_layers(
     proprio: torch.Tensor,
     layers: Sequence[int],
     steps: int = 1,
+    pooling: str = "mean",
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Generate actions and return mean-pooled action tokens at selected blocks.
 
@@ -54,7 +66,9 @@ def capture_xvla_action_layers(
             handle.remove()
     if set(captured) != set(layers):
         raise RuntimeError("not every requested X-VLA layer executed")
-    features = torch.stack([captured[layer].mean(dim=1) for layer in layers], dim=1)
+    features = torch.stack(
+        [pool_token_features(captured[layer], pooling) for layer in layers], dim=1
+    )
     return action, features
 
 
@@ -68,6 +82,7 @@ def capture_xvla_joint_layers(
     vlm_layers: Sequence[int],
     action_layers: Sequence[int],
     steps: int = 1,
+    pooling: str = "mean",
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Capture Florence encoder and domain-conditioned action-stack layers."""
     encoder = model.vlm.language_model.model.encoder.layers
@@ -89,9 +104,12 @@ def capture_xvla_joint_layers(
             proprio=proprio,
             layers=action_layers,
             steps=steps,
+            pooling=pooling,
         )
     finally:
         for handle in handles:
             handle.remove()
-    vlm_features = torch.stack([vlm_captured[layer].mean(dim=1) for layer in vlm_layers], dim=1)
+    vlm_features = torch.stack(
+        [pool_token_features(vlm_captured[layer], pooling) for layer in vlm_layers], dim=1
+    )
     return action, vlm_features, action_features

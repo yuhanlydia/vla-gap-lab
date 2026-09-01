@@ -8,8 +8,9 @@ import json
 from pathlib import Path
 
 import numpy as np
-from sklearn.linear_model import Ridge
 from sklearn.model_selection import KFold
+
+from vla_gap_lab.state_transport import dual_ridge_predict
 
 
 def _cosine_rows(left: np.ndarray, right: np.ndarray) -> np.ndarray:
@@ -43,6 +44,7 @@ def main() -> None:
     parser.add_argument("--folds", type=int, default=4)
     parser.add_argument("--null-permutations", type=int, default=20)
     parser.add_argument("--seed", type=int, default=17)
+    parser.add_argument("--standardize", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     data = np.load(args.cache, allow_pickle=False)
@@ -66,7 +68,7 @@ def main() -> None:
                 stack: np.ndarray = stack,
                 layer_col: int = layer_col,
             ) -> np.ndarray:
-                return np.stack(
+                selected = np.stack(
                     [
                         stack[(data["embodiment"] == embodiment) & (data["seed"] == seed)][
                             0, layer_col
@@ -74,26 +76,35 @@ def main() -> None:
                         for seed in seeds
                     ]
                 )
+                return selected.reshape(len(selected), -1)
 
             source_all, target_all = select(args.source), select(args.target)
             totals = np.zeros(4, dtype=np.float64)
             raw_totals = np.zeros(4, dtype=np.float64)
-            null_hits = 0.0
+            null_hits = np.zeros(args.null_permutations, dtype=np.float64)
             for train_indices, test_indices in folds:
-                mapping = Ridge(alpha=args.alpha).fit(
-                    source_all[train_indices], target_all[train_indices]
-                )
                 totals += _retrieval_stats(
-                    mapping.predict(source_all[test_indices]), target_all[test_indices]
+                    dual_ridge_predict(
+                        source_all[train_indices],
+                        target_all[train_indices],
+                        source_all[test_indices],
+                        alpha=args.alpha,
+                        standardize=args.standardize,
+                    ),
+                    target_all[test_indices],
                 )
                 raw_totals += _retrieval_stats(source_all[test_indices], target_all[test_indices])
-                for _ in range(args.null_permutations):
+                for permutation_index in range(args.null_permutations):
                     shuffled = rng.permutation(train_indices)
-                    null_mapping = Ridge(alpha=args.alpha).fit(
-                        source_all[train_indices], target_all[shuffled]
-                    )
-                    null_hits += _retrieval_stats(
-                        null_mapping.predict(source_all[test_indices]), target_all[test_indices]
+                    null_hits[permutation_index] += _retrieval_stats(
+                        dual_ridge_predict(
+                            source_all[train_indices],
+                            target_all[shuffled],
+                            source_all[test_indices],
+                            alpha=args.alpha,
+                            standardize=args.standardize,
+                        ),
+                        target_all[test_indices],
                     )[0]
             results.append(
                 {
@@ -102,7 +113,13 @@ def main() -> None:
                     "transport_retrieval": float(totals[0] / totals[1]),
                     "raw_retrieval": float(raw_totals[0] / raw_totals[1]),
                     "permuted_train_retrieval": float(
-                        null_hits / (args.null_permutations * totals[1])
+                        null_hits.sum() / (args.null_permutations * totals[1])
+                    ),
+                    "permutation_retrieval_95_percentile": float(
+                        np.quantile(null_hits / totals[1], 0.95)
+                    ),
+                    "permutation_p_value": float(
+                        (1 + np.sum(null_hits >= totals[0])) / (args.null_permutations + 1)
                     ),
                     "transport_paired_cosine": float(totals[2] / totals[1]),
                     "transport_margin": float(totals[3] / totals[1]),
@@ -114,6 +131,7 @@ def main() -> None:
         "seeds": seeds.tolist(),
         "folds": args.folds,
         "null_permutations": args.null_permutations,
+        "standardize_source": args.standardize,
         "chance_by_fold": float(args.folds / len(seeds)),
         "results": results,
     }

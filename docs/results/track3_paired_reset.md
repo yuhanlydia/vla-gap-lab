@@ -54,3 +54,24 @@ PYTHONPATH=src python3 scripts/probe_xvla_pair_transport.py \
 ## Next gate
 
 Reset states vary object layout but do not supply task-phase labels. The formal Gate-0 still requires paired or phase-aligned trajectories and cross-embodiment phase accuracy above 80%. Next work should either generate official planned trajectories on a machine with Curobo available, or replay matched joint paths if compatible official paths can be obtained. No state-transport distillation should begin from this result alone.
+
+## N=32 summary-pooling replication
+
+The reset-pair sample was subsequently doubled to 32 seeds (64 observations).
+Instead of token means alone, each layer uses concatenated token mean, standard
+deviation, first token, and last token. A dual-form ridge implementation makes
+the small-N/high-dimensional mapping and 500 correspondence permutations
+tractable without materializing a feature-by-target coefficient matrix.
+
+At N=16, the best summary-pooled result was control layer 8: 43.75% retrieval
+against 25% fold chance, with an uncorrected 200-permutation p-value of 0.0547.
+Its retrieval margin was still negative. On the N=32 replication:
+
+| stack/layer | mapped top-1 | fold chance | null mean | null 95th percentile | p | margin |
+|---|---:|---:|---:|---:|---:|---:|
+| Control 8 | 18.75% | 12.5% | 12.3% | 18.75% | 0.136 | -0.0088 |
+
+No tested layer exceeded its permutation 95th percentile. The best mapped
+retrieval at N=32 was only 18.75%, shared by several control layers and VLM
+layer 11. The earlier signal was therefore a small-sample fluctuation rather
+than evidence for portable state. The Track 3 Gate remains closed.
