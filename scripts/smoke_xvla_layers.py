@@ -8,10 +8,6 @@ import json
 from pathlib import Path
 
 import numpy as np
-import torch
-from transformers import AutoModel, AutoProcessor
-
-from vla_gap_lab.xvla_adapter import capture_xvla_action_layers
 
 
 def main() -> None:
@@ -20,6 +16,11 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--layers", nargs="+", type=int, default=[0, 4, 8, 12, 16, 20, 23])
     args = parser.parse_args()
+    import torch
+    from transformers import AutoModel, AutoProcessor
+
+    from vla_gap_lab.xvla_adapter import capture_xvla_action_layers
+
     torch.cuda.reset_peak_memory_stats()
     processor = AutoProcessor.from_pretrained(args.checkpoint, trust_remote_code=True)
     model = AutoModel.from_pretrained(

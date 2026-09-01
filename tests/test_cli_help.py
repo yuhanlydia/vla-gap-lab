@@ -15,6 +15,11 @@ SCRIPTS = [
     "extract_xvla_robotwin_pairs.py",
     "collect_mu_vla_memory_trajectory.py",
     "eval_mu_vla_intervention.py",
+    "extract_xvla_robotwin_hidden.py",
+    "model_preflight.py",
+    "smoke_mu_vla_mikasa.py",
+    "smoke_openvla_load.py",
+    "smoke_xvla_layers.py",
 ]
 
 

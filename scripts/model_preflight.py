@@ -7,9 +7,6 @@ import argparse
 import json
 from pathlib import Path
 
-import torch
-from huggingface_hub import HfApi
-
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -18,6 +15,9 @@ def main() -> None:
     parser.add_argument("--load-mode", choices=["bf16", "int8", "int4"], default="bf16")
     parser.add_argument("--reserve-gib", type=float, default=2.0)
     args = parser.parse_args()
+
+    import torch
+    from huggingface_hub import HfApi
 
     info = HfApi().model_info(args.repo, files_metadata=True)
     checkpoint_bytes = sum(

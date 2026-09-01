@@ -7,13 +7,6 @@ import argparse
 import json
 from pathlib import Path
 
-import gymnasium as gym
-import mikasa_robo_suite.vla.memory_envs  # noqa: F401
-import torch
-from mikasa_robo_suite.vla.utils.apply_wrappers import apply_mikasa_vla_wrappers
-
-from vla_gap_lab.mu_vla_adapter import MuVLAPolicy
-
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -21,6 +14,13 @@ def main() -> None:
     parser.add_argument("--task", default="RememberColor3-VLA-v0")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    import gymnasium as gym
+    import mikasa_robo_suite.vla.memory_envs  # noqa: F401
+    import torch
+    from mikasa_robo_suite.vla.utils.apply_wrappers import apply_mikasa_vla_wrappers
+
+    from vla_gap_lab.mu_vla_adapter import MuVLAPolicy
+
     env = gym.make(
         args.task,
         num_envs=1,

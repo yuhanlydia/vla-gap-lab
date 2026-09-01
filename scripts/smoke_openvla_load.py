@@ -7,15 +7,15 @@ import argparse
 import json
 from pathlib import Path
 
-import torch
-from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
-
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+
+    import torch
+    from transformers import AutoModelForVision2Seq, AutoProcessor, BitsAndBytesConfig
 
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA is required for this int4 smoke test")
