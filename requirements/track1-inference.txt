@@ -1,0 +1,8 @@
+# Compatibility set validated on the 16 GB RTX A4000 development machine.
+# OpenVLA-OFT itself pins Transformers to its bidirectional-attention fork.
+accelerate==0.30.1
+bitsandbytes==0.50.2
+protobuf==3.20.3
+tensorflow-metadata==1.15.0
+wandb==0.15.12
+

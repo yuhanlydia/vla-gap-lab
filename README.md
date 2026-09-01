@@ -49,6 +49,16 @@ The current development machine has a 16 GB RTX A4000. Configs therefore support
 - [ ] Track 3: layerwise portability probes
 - [ ] Track 3: hidden-state transport and distillation
 
+Validated Track 1 model-load path on the development machine:
+
+```bash
+pip install -r requirements/track1-inference.txt
+pip install -e external/openvla-oft --no-deps
+python scripts/smoke_openvla_load.py \
+  --checkpoint models/openvla-7b-oft-combined \
+  --output artifacts/smoke/openvla_load.json
+```
+
 ## Sources
 
 - [LIBERO-Plus](https://github.com/sylvestf/LIBERO-plus)
@@ -57,4 +67,3 @@ The current development machine has a 16 GB RTX A4000. Configs therefore support
 - [mu-VLA checkpoint](https://huggingface.co/mu-vla/mu-vla-openvla-oft-mikasa-robo-5-tasks-m64-k2-tbptt)
 - [RoboTwin 2.0](https://github.com/HashimHS/robotwin)
 - [X-VLA](https://github.com/2toinf/X-VLA)
-
