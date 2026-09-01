@@ -47,7 +47,9 @@ def main() -> None:
     parser.add_argument("--task", default="ShellGameShuffleTouch-VLA-v0")
     parser.add_argument("--episodes", type=int, default=12)
     parser.add_argument("--start-seed", type=int, default=4242424242)
-    parser.add_argument("--pooling", choices=["mean", "summary", "full"], default="summary")
+    parser.add_argument(
+        "--pooling", choices=["mean", "summary", "strided", "full"], default="summary"
+    )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
@@ -80,6 +82,8 @@ def main() -> None:
                     memory_features = torch.stack(
                         [tokens.mean(dim=0), tokens.std(dim=0), tokens[0], tokens[-1]]
                     )
+                elif args.pooling == "strided":
+                    memory_features = tokens[::8]
                 else:
                     memory_features = tokens
                 rows["memory"].append(memory_features.cpu().numpy())

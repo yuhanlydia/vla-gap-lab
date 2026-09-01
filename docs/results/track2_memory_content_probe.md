@@ -55,3 +55,23 @@ Therefore conflict-adaptive refresh remains untrained. A defensible next step
 is a larger episode-level replication or a full-token probe, followed by a
 causal intervention that preserves identity while changing only the tracked
 location state.
+
+## Strided-token replication
+
+To test whether summary pooling hid token-specific state, the same 24 seeds
+were rerun while retaining memory tokens `0, 8, ..., 56` in full (32,768
+features). At the first completed swap:
+
+| Features | Target identity | Current target slot |
+|---|---:|---:|
+| Mean/std/first/last summary | 0.631 [0.445, 0.799] | 0.349 [0.187, 0.549] |
+| Eight strided tokens | **0.743 [0.574, 0.874]** | **0.343 [0.234, 0.488]** |
+
+The strided-token intervals do not overlap, strengthening the early
+persistence–revision contrast. At manipulation, however, the same probe gives
+0.314 [0.200, 0.447] for identity and 0.236 [0.142, 0.345] for slot: neither is
+reliably above chance. The two-stage interpretation is unchanged—revision
+fails after the first swap, then persistent identity also decays before action.
+
+This replication addresses token pooling but not the causal-method Gate, which
+remains closed.

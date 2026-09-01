@@ -74,6 +74,11 @@ PYTHONPATH=src .venv-openvla/bin/python scripts/probe_mu_vla_memory_tracking.py 
   --output artifacts/reports/shell_shuffle_memory_summary_probe_n24_a100.json
 ```
 
+Use `--pooling strided` during collection to retain every eighth memory token
+instead of four summary statistics. The downstream probe flattens any retained
+token axes and omits the redundant delta-from-reset probe when learned initial
+memory is identical across episodes.
+
 ## OpenVLA causal utilization
 
 Use a separate system-site-packages environment. OpenVLA's Prismatic vision

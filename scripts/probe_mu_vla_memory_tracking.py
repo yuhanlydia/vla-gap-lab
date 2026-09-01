@@ -17,6 +17,7 @@ def main() -> None:
     parser.add_argument("--trajectory", type=Path, required=True)
     parser.add_argument("--alpha", type=float, default=100.0)
     parser.add_argument("--folds", type=int, default=4)
+    parser.add_argument("--bootstrap-samples", type=int, default=2_000)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     data = np.load(args.trajectory, allow_pickle=False)
@@ -25,6 +26,11 @@ def main() -> None:
     episode = data["episode"]
     first_by_episode = {item: memory[np.flatnonzero(episode == item)[0]] for item in np.unique(episode)}
     delta = np.stack([row - first_by_episode[item] for row, item in zip(memory, episode)])
+    initial_rows = np.stack(list(first_by_episode.values()))
+    reset_is_constant = bool(np.allclose(initial_rows, initial_rows[0], atol=1e-6))
+    feature_sets = [("raw", memory)]
+    if not reset_is_constant:
+        feature_sets.append(("delta_from_reset", delta))
 
     segments = [(phase_name, data["phase"] == phase_name) for phase_name in ("cue", "shuffle", "manipulation")]
     for completed in sorted(np.unique(data["completed_swaps"][data["phase"] == "shuffle"])):
@@ -36,7 +42,7 @@ def main() -> None:
         )
 
     results = []
-    for feature_name, features in (("raw", memory), ("delta_from_reset", delta)):
+    for feature_name, features in feature_sets:
         for segment_name, mask in segments:
             for label_name in ("target_mug", "target_slot"):
                 try:
@@ -46,6 +52,7 @@ def main() -> None:
                         episode[mask],
                         alpha=args.alpha,
                         folds=args.folds,
+                        bootstrap_samples=args.bootstrap_samples,
                     )
                 except ValueError as error:
                     metrics = {"error": str(error)}
@@ -62,6 +69,8 @@ def main() -> None:
         "trajectory": str(args.trajectory),
         "alpha": args.alpha,
         "folds": args.folds,
+        "bootstrap_samples": args.bootstrap_samples,
+        "reset_memory_constant_across_episodes": reset_is_constant,
         "chance_balanced_accuracy": 1 / 3,
         "results": results,
     }
