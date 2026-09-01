@@ -42,6 +42,14 @@ tracks:
       first_swap_slot_bootstrap_95_ci: [0.240, 0.429]
       causal_success_gain_pp: 0.0
       required_causal_success_gain_pp: 10.0
+      static_recall_control:
+        task: RememberColor3-VLA-v0
+        episodes: 10
+        normal_successes: 10
+        freeze_successes: 9
+        reset_successes: 2
+        reset_minus_normal_bootstrap_95_ci: [-1.0, -0.5]
+        reset_mcnemar_exact_two_sided_p: 0.0078125
     protocol_deviations:
       - only one dynamic tracking task was evaluated causally
     reason: representation diagnostic supports early revision failure, but no valid causal success gain
