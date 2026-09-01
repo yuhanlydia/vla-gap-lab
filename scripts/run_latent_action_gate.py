@@ -37,6 +37,15 @@ def main() -> None:
             args.control_retention,
         )
     report = {
+        "schema_version": 2,
+        "cache": str(args.cache),
+        "probe": {
+            "type": "ridge",
+            "alpha": args.alpha,
+            "split_seed": args.seed,
+            "validation_fraction": 0.2,
+            "split_unit": "sample_id (trajectory for real LIBERO caches)",
+        },
         "layers": [
             {
                 "layer": item.layer,

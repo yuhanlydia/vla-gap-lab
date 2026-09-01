@@ -70,9 +70,10 @@ original demonstration states:
 
 ```bash
 pip install -r requirements/track1-simulator.txt
-PYTHONPATH=external/LIBERO-plus MUJOCO_GL=egl \
+PYTHONPATH=external/LIBERO-plus:src MUJOCO_GL=egl \
 TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
-python3 scripts/render_paired_libero_states.py --task-id 1 --num-demos 10 --num-frames 8 \
+.venv-openvla/bin/python scripts/render_paired_libero_states.py \
+  --task-id 1 --num-demos 10 --num-frames 8 \
   --output artifacts/pairs/libero_spatial_task_1.npz
 ```
 
@@ -90,6 +91,7 @@ python3 scripts/render_paired_libero_states.py --task-id 1 --num-demos 10 --num-
 - [Track 1 smoke-scale preliminary diagnostic](docs/results/track1_preliminary.md)
 - [Track 1 causal-utilization diagnostic](docs/results/track1_causal_utilization.md)
 - [Track 1 instruction-matched closed-loop pilot](docs/results/track1_local_closed_loop.md)
+- [Track 1 480-state Camera representation replication](docs/results/track1_camera_n480.md)
 - [Track 2 static-memory intervention smoke](docs/results/track2_static_smoke.md)
 - [Track 2 dynamic-tracking Gate-0](docs/results/track2_tracking_gate.md)
 - [Track 3 official Aloha trajectory/hidden-state smoke](docs/results/track3_aloha_smoke.md)

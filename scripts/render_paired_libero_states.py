@@ -68,23 +68,46 @@ def main() -> None:
             pair_ids.extend(f"{key}:{int(index)}" for index in indices)
     states = np.concatenate(states_parts)
     actions = np.concatenate(action_parts)
-    clean_agent = np.concatenate(agent_parts)
-    clean_wrist = np.concatenate(wrist_parts)
+    demonstration_agent = np.concatenate(agent_parts)
+    demonstration_wrist = np.concatenate(wrist_parts)
 
-    env = OffScreenRenderEnv(
+    base_bddl = (
+        args.libero_root
+        / "libero/libero/bddl_files"
+        / args.suite
+        / f"{demo_path.stem.removesuffix('_demo')}.bddl"
+    )
+    if not base_bddl.exists():
+        raise FileNotFoundError(f"base BDDL inferred from demonstration is missing: {base_bddl}")
+    clean_env = OffScreenRenderEnv(
+        bddl_file_name=str(base_bddl),
+        camera_heights=128,
+        camera_widths=128,
+    )
+    shifted_env = OffScreenRenderEnv(
         bddl_file_name=suite.get_task_bddl_file_path(args.task_id),
         camera_heights=128,
         camera_widths=128,
     )
-    env.reset()
-    shifted_agent, shifted_wrist = [], []
+    clean_env.reset()
+    shifted_env.reset()
+    clean_agent, clean_wrist, shifted_agent, shifted_wrist = [], [], [], []
     try:
         for state in states:
-            obs = env.set_init_state(state)
-            shifted_agent.append(obs["agentview_image"])
-            shifted_wrist.append(obs["robot0_eye_in_hand_image"])
+            clean_obs = clean_env.set_init_state(state)
+            shifted_obs = shifted_env.set_init_state(state)
+            clean_agent.append(clean_obs["agentview_image"])
+            clean_wrist.append(clean_obs["robot0_eye_in_hand_image"])
+            shifted_agent.append(shifted_obs["agentview_image"])
+            shifted_wrist.append(shifted_obs["robot0_eye_in_hand_image"])
     finally:
-        env.close()
+        clean_env.close()
+        shifted_env.close()
+
+    clean_agent = np.asarray(clean_agent)
+    clean_wrist = np.asarray(clean_wrist)
+    shifted_agent = np.asarray(shifted_agent)
+    shifted_wrist = np.asarray(shifted_wrist)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     metadata = {
@@ -97,22 +120,39 @@ def main() -> None:
         "category": perturbation.category,
         "difficulty_level": perturbation.difficulty_level,
         "demo_path": str(demo_path),
+        "base_bddl": str(base_bddl),
         "demo_indices": list(range(args.demo_index, args.demo_index + args.num_demos)),
         "pair_ids": pair_ids,
         "action_semantics": "identical simulator state; original expert action",
+        "render_semantics": "base and variant BDDL re-rendered in the same process",
     }
     np.savez_compressed(
         args.output,
         clean_agent=clean_agent,
         clean_wrist=clean_wrist,
-        shifted_agent=np.asarray(shifted_agent),
-        shifted_wrist=np.asarray(shifted_wrist),
+        shifted_agent=shifted_agent,
+        shifted_wrist=shifted_wrist,
+        demonstration_agent=demonstration_agent,
+        demonstration_wrist=demonstration_wrist,
         states=states,
         actions=actions,
         metadata=np.asarray(json.dumps(metadata, sort_keys=True)),
     )
     pixel_mae = float(np.abs(clean_agent.astype(float) - shifted_agent).mean())
-    print(json.dumps({**metadata, "output": str(args.output), "pixel_mae": pixel_mae}, indent=2))
+    demonstration_mae = float(
+        np.abs(clean_agent.astype(float) - demonstration_agent.astype(float)).mean()
+    )
+    print(
+        json.dumps(
+            {
+                **metadata,
+                "output": str(args.output),
+                "pixel_mae": pixel_mae,
+                "demonstration_rerender_mae": demonstration_mae,
+            },
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

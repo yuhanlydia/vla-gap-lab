@@ -39,11 +39,15 @@ def latent_action_gate(
     representation_threshold: float = 0.8,
     control_threshold: float = 0.7,
 ) -> dict:
+    # A ratio of two negative R² values is positive but does not mean that
+    # action information is retained. Mark those layers ineligible and expose
+    # NaN retention so reports cannot accidentally rank them as robust.
+    interpretable = (clean_r2 > 0.0) & (shifted_r2 >= 0.0)
     retention = np.divide(
         shifted_r2,
         clean_r2,
         out=np.full_like(shifted_r2, np.nan, dtype=float),
-        where=np.abs(clean_r2) > 1e-12,
+        where=interpretable,
     )
     eligible = np.flatnonzero(retention > representation_threshold)
     best = int(np.nanargmax(retention)) if np.isfinite(retention).any() else None

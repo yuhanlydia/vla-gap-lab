@@ -43,6 +43,13 @@ def test_gate_requires_interaction_of_both_conditions():
     assert failed["passed"] is False
 
 
+def test_gate_rejects_ratio_of_negative_r2_values():
+    result = latent_action_gate(np.array([-0.5, 0.5]), np.array([-0.45, -0.1]), 0.5)
+    assert result["passed"] is False
+    assert result["eligible_layer_indices"] == []
+    assert all(np.isnan(value) for value in result["representation_retention"])
+
+
 def test_controlskip_is_identity_at_initialization():
     module = ControlSkip(hidden_dim=12, action_horizon=2, action_dim=3, rank=4)
     action = torch.randn(5, 2, 3)
