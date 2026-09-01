@@ -14,6 +14,7 @@ SCRIPTS = [
     "run_openvla_causal_utilization.py",
     "extract_xvla_robotwin_pairs.py",
     "collect_mu_vla_memory_trajectory.py",
+    "eval_mu_vla_intervention.py",
 ]
 
 

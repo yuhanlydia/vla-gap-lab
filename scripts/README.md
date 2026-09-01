@@ -58,8 +58,13 @@ Run an explicitly reset, receding-horizon closed-loop episode:
 ```bash
 PYTHONPATH=../../src uv run python ../../scripts/eval_mu_vla_intervention.py \
   --checkpoint ../../models/mu-vla-m64-k2 --task RememberColor3-VLA-v0 \
-  --mode normal --episodes 1 --output ../../artifacts/mikasa/remember_color_normal.json
+  --mode normal --episodes 10 --resume \
+  --output ../../artifacts/mikasa/remember_color_normal.json
 ```
+
+The evaluator atomically checkpoints after every completed episode. `--resume`
+requires the checkpoint, task, mode, intervention timing, and starting seed to
+match, then continues with the next unused seed.
 
 Collect and probe dynamic ShellGame memory without erasing target identity:
 

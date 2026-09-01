@@ -7,17 +7,13 @@ import argparse
 import json
 from pathlib import Path
 
-import gymnasium as gym
-import mikasa_robo_suite.vla.memory_envs  # noqa: F401
 import numpy as np
-import torch
-from mikasa_robo_suite.vla.utils.apply_wrappers import apply_mikasa_vla_wrappers
 
-from vla_gap_lab.mu_vla_adapter import MuVLAPolicy
+from vla_gap_lab.artifact_io import write_json_atomic
 
 
 def scalar(value) -> float:
-    if torch.is_tensor(value):
+    if hasattr(value, "detach"):
         return float(value.detach().reshape(-1)[0].cpu())
     return float(np.asarray(value).reshape(-1)[0])
 
@@ -31,8 +27,41 @@ def main() -> None:
     parser.add_argument("--revision-event", choices=["cue_end", "shuffle_end"], default=None)
     parser.add_argument("--episodes", type=int, default=1)
     parser.add_argument("--start-seed", type=int, default=4242424242)
+    parser.add_argument("--resume", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    expected = {
+        "task": args.task,
+        "checkpoint": str(args.checkpoint),
+        "mode": args.mode,
+        "revision_step": args.revision_step,
+        "revision_event": args.revision_event,
+        "start_seed": args.start_seed,
+    }
+    episodes = []
+    if args.resume and args.output.exists():
+        previous = json.loads(args.output.read_text())
+        for key, value in expected.items():
+            if previous.get(key) != value:
+                raise ValueError(
+                    f"resume metadata mismatch for {key}: {previous.get(key)!r} != {value!r}"
+                )
+        episodes = previous["episodes"]
+        seeds = [episode["seed"] for episode in episodes]
+        if seeds != [args.start_seed + index for index in range(len(episodes))]:
+            raise ValueError("resume episode seeds must be contiguous")
+    if len(episodes) > args.episodes:
+        raise ValueError(f"resume file has {len(episodes)} episodes, above target {args.episodes}")
+    if len(episodes) == args.episodes:
+        print(json.dumps({**expected, "completed_episodes": len(episodes), "resumed": True}, indent=2))
+        return
+
+    import gymnasium as gym
+    import mikasa_robo_suite.vla.memory_envs  # noqa: F401
+    from mikasa_robo_suite.vla.utils.apply_wrappers import apply_mikasa_vla_wrappers
+
+    from vla_gap_lab.mu_vla_adapter import MuVLAPolicy
+
     env = gym.make(
         args.task,
         num_envs=1,
@@ -49,9 +78,18 @@ def main() -> None:
         mode=args.mode,
         revision_step=args.revision_step,
     )
-    episodes = []
+    def checkpoint() -> dict:
+        report = {
+            "schema_version": 2,
+            **expected,
+            "episodes": episodes,
+            "success_rate": float(np.mean([episode["success"] for episode in episodes])),
+        }
+        write_json_atomic(args.output, report)
+        return report
+
     try:
-        for episode_index in range(args.episodes):
+        for episode_index in range(len(episodes), args.episodes):
             obs, _ = env.reset(seed=args.start_seed + episode_index)
             policy.reset()
             cue_steps = int(scalar(getattr(env.unwrapped, "cue_steps_per_env", [0])))
@@ -87,18 +125,10 @@ def main() -> None:
                     "candidate_update_norm_by_step": policy.update_norm,
                 }
             )
+            checkpoint()
     finally:
         env.close()
-    report = {
-        "task": args.task,
-        "mode": args.mode,
-        "revision_step": args.revision_step,
-        "revision_event": args.revision_event,
-        "episodes": episodes,
-        "success_rate": float(np.mean([episode["success"] for episode in episodes])),
-    }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(report, indent=2) + "\n")
+    report = checkpoint()
     print(json.dumps({key: value for key, value in report.items() if key != "episodes"}, indent=2))
 
 
