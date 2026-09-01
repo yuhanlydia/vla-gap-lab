@@ -118,6 +118,7 @@ The report intentionally excludes environment variables and credentials.
 
 ## Results log
 
+- [Gate-0 decision matrix and next experiments](docs/results/gate0_decision_matrix.md)
 - [Machine-readable Gate-0 summary](results/gate0_summary.yaml) — distinguishes
   a failed pilot from a completed formal protocol and records every known
   sample-size or task-coverage deviation.
