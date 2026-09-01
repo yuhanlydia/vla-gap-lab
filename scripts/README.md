@@ -67,6 +67,7 @@ Collect and probe dynamic ShellGame memory without erasing target identity:
 cd external/MIKASA-Robo
 PYTHONPATH=../../src uv run python ../../scripts/collect_mu_vla_memory_trajectory.py \
   --checkpoint ../../models/mu-vla-m64-k2 --episodes 24 --pooling summary \
+  --checkpoint-every 5 --resume \
   --output ../../artifacts/mikasa/shell_shuffle_memory_summary_n24.npz
 cd ../..
 PYTHONPATH=src .venv-openvla/bin/python scripts/probe_mu_vla_memory_tracking.py \
@@ -78,6 +79,11 @@ Use `--pooling strided` during collection to retain every eighth memory token
 instead of four summary statistics. The downstream probe flattens any retained
 token axes and omits the redundant delta-from-reset probe when learned initial
 memory is identical across episodes.
+
+Collection checkpoints atomically every five completed episodes by default.
+Re-running with `--resume` validates checkpoint/task/seed/pooling metadata and
+continues from the next episode without repeating seeds. Lower
+`--checkpoint-every` for more frequent recovery points.
 
 ## OpenVLA causal utilization
 

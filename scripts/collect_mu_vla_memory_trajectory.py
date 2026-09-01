@@ -7,17 +7,13 @@ import argparse
 import json
 from pathlib import Path
 
-import gymnasium as gym
-import mikasa_robo_suite.vla.memory_envs  # noqa: F401
 import numpy as np
-import torch
-from mikasa_robo_suite.vla.utils.apply_wrappers import apply_mikasa_vla_wrappers
 
-from vla_gap_lab.mu_vla_adapter import MuVLAPolicy
+from vla_gap_lab.trajectory_io import load_trajectory_for_resume, save_trajectory_atomic
 
 
 def scalar_int(value) -> int:
-    if torch.is_tensor(value):
+    if hasattr(value, "detach"):
         return int(value.detach().reshape(-1)[0].cpu())
     return int(np.asarray(value).reshape(-1)[0])
 
@@ -50,8 +46,58 @@ def main() -> None:
     parser.add_argument(
         "--pooling", choices=["mean", "summary", "strided", "full"], default="summary"
     )
+    parser.add_argument("--checkpoint-every", type=int, default=5)
+    parser.add_argument("--resume", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    if args.checkpoint_every < 1:
+        raise ValueError("--checkpoint-every must be positive")
+
+    rows = {
+        key: []
+        for key in (
+            "memory",
+            "episode",
+            "step",
+            "phase",
+            "target_mug",
+            "target_slot",
+            "completed_swaps",
+        )
+    }
+    expected = {
+        "checkpoint": str(args.checkpoint),
+        "task": args.task,
+        "start_seed": args.start_seed,
+        "memory_pooling": args.pooling,
+    }
+    episode_summaries = []
+    if args.resume and args.output.exists():
+        rows, prior_metadata = load_trajectory_for_resume(args.output, expected)
+        episode_summaries = prior_metadata["episodes"]
+    start_episode = len(episode_summaries)
+    if start_episode > args.episodes:
+        raise ValueError(f"resume file has {start_episode} episodes, above target {args.episodes}")
+    if start_episode == args.episodes:
+        print(
+            json.dumps(
+                {
+                    **expected,
+                    "completed_episodes": len(episode_summaries),
+                    "samples": len(rows["step"]),
+                    "resumed": True,
+                },
+                indent=2,
+            )
+        )
+        return
+
+    import gymnasium as gym
+    import mikasa_robo_suite.vla.memory_envs  # noqa: F401
+    import torch
+    from mikasa_robo_suite.vla.utils.apply_wrappers import apply_mikasa_vla_wrappers
+
+    from vla_gap_lab.mu_vla_adapter import MuVLAPolicy
 
     env = gym.make(
         args.task,
@@ -64,10 +110,19 @@ def main() -> None:
     )
     env = apply_mikasa_vla_wrappers(env, include_overlays=False)
     policy = MuVLAPolicy(args.checkpoint, env.unwrapped.LANGUAGE_INSTRUCTION)
-    rows = {key: [] for key in ("memory", "episode", "step", "phase", "target_mug", "target_slot", "completed_swaps")}
-    episode_summaries = []
+
+    def checkpoint() -> None:
+        metadata = {
+            "schema_version": 2,
+            **expected,
+            "episodes": episode_summaries,
+            "memory_timing": "before current observation update",
+            "target_slot": "simulator slot of target mug after completed swaps at current observation",
+        }
+        save_trajectory_atomic(args.output, rows, metadata)
+
     try:
-        for episode_index in range(args.episodes):
+        for episode_index in range(start_episode, args.episodes):
             seed = args.start_seed + episode_index
             obs, _ = env.reset(seed=seed)
             policy.reset()
@@ -99,31 +154,12 @@ def main() -> None:
                 if bool(scalar_int(terminated)) or bool(scalar_int(truncated)):
                     break
             episode_summaries.append({"episode": episode_index, "seed": seed, "success": success})
+            if len(episode_summaries) % args.checkpoint_every == 0:
+                checkpoint()
     finally:
         env.close()
-
-    metadata = {
-        "schema_version": 1,
-        "checkpoint": str(args.checkpoint),
-        "task": args.task,
-        "start_seed": args.start_seed,
-        "episodes": episode_summaries,
-        "memory_pooling": args.pooling,
-        "memory_timing": "before current observation update",
-        "target_slot": "simulator slot of target mug after completed swaps at current observation",
-    }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(
-        args.output,
-        memory=np.asarray(rows["memory"], dtype=np.float16),
-        episode=np.asarray(rows["episode"], dtype=np.int32),
-        step=np.asarray(rows["step"], dtype=np.int32),
-        phase=np.asarray(rows["phase"]),
-        target_mug=np.asarray(rows["target_mug"], dtype=np.int8),
-        target_slot=np.asarray(rows["target_slot"], dtype=np.int8),
-        completed_swaps=np.asarray(rows["completed_swaps"], dtype=np.int8),
-        metadata=np.asarray(json.dumps(metadata, sort_keys=True)),
-    )
+    checkpoint()
+    metadata = {"schema_version": 2, **expected, "episodes": episode_summaries}
     print(json.dumps({**metadata, "samples": len(rows["step"]), "output": str(args.output)}, indent=2))
 
 
