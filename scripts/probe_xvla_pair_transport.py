@@ -126,8 +126,12 @@ def main() -> None:
                 }
             )
     report = {
+        "schema_version": 2,
+        "cache": str(args.cache),
         "source": args.source,
         "target": args.target,
+        "alpha": args.alpha,
+        "seed": args.seed,
         "seeds": seeds.tolist(),
         "folds": args.folds,
         "null_permutations": args.null_permutations,

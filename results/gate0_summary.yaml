@@ -76,6 +76,18 @@ tracks:
       permutation_p_value: 0.1357
       retrieval_margin: -0.0088
       required_cross_phase_accuracy: 0.8
+      corrected_seed_audit:
+        split_seed: 42
+        ridge_alpha: 100
+        best_control_layer: 4
+        mapped_retrieval: 0.1875
+        null_95_percentile: 0.21875
+        permutation_p_value: 0.1437
+      exploratory_alpha_sweep:
+        tests: 48
+        minimum_uncorrected_p_value: 0.02196
+        bonferroni_p_value: 1.0
+        all_retrieval_margins_negative: true
     protocol_deviations:
       - paired reset states are not semantic-phase-aligned trajectories
       - only Aloha and Franka on one task were evaluated

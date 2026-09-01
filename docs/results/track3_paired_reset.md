@@ -47,7 +47,7 @@ TRANSFORMERS_NO_TF=1 PYTHONPATH=src .venv-xvla/bin/python \
 
 PYTHONPATH=src python3 scripts/probe_xvla_pair_transport.py \
   --cache artifacts/hidden/xvla_blocks_ranking_rgb_aloha_franka_reset_16.npz \
-  --null-permutations 10 \
+  --seed 42 --null-permutations 10 \
   --output artifacts/results/xvla_pair_transport_reset_16_cv.json
 ```
 
@@ -75,3 +75,19 @@ No tested layer exceeded its permutation 95th percentile. The best mapped
 retrieval at N=32 was only 18.75%, shared by several control layers and VLM
 layer 11. The earlier signal was therefore a small-sample fluctuation rather
 than evidence for portable state. The Track 3 Gate remains closed.
+
+## Seed and ridge-strength audit
+
+The earlier N=32 command inherited the script's historical default split seed
+17, while the project config preregisters seed 42. With the corrected seed 42,
+500 correspondence permutations, and alpha 100, the best control layer is 4:
+18.75% retrieval, null 95th percentile 21.875%, uncorrected `p=0.144`, and
+negative margin. Control layer 8 falls to 9.375% (`p=0.743`). This strengthens,
+rather than reverses, the failed Gate.
+
+An exploratory alpha sweep `{1, 10, 100, 1000}` at seed 42 contains one nominal
+hit: alpha 1 / control layer 4 reaches 25%, with uncorrected `p=0.022`. It was
+selected from 48 layer-by-alpha tests; Bonferroni family-wise p is 1.0, and its
+retrieval margin remains negative (-0.0055). No portable-state claim is made.
+Probe reports now record cache path, alpha, and seed explicitly to prevent this
+provenance ambiguity from recurring.
