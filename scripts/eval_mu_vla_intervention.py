@@ -30,6 +30,10 @@ def main() -> None:
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    if args.episodes < 1:
+        raise ValueError("--episodes must be positive")
+    if args.start_seed < 0 or args.start_seed + args.episodes - 1 >= 2**32:
+        raise ValueError("episode seeds must be in NumPy RandomState range [0, 2**32 - 1]")
     expected = {
         "task": args.task,
         "checkpoint": str(args.checkpoint),

@@ -38,3 +38,33 @@ def test_heavy_cli_help_does_not_require_track_dependencies(script: str) -> None
     )
     assert result.returncode == 0, result.stderr
     assert "usage:" in result.stdout
+
+
+def test_mu_eval_rejects_seed_range_before_track_imports() -> None:
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT / "src")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "eval_mu_vla_intervention.py"),
+            "--checkpoint",
+            "unused",
+            "--task",
+            "unused",
+            "--episodes",
+            "1",
+            "--start-seed",
+            str(2**32),
+            "--output",
+            "unused.json",
+        ],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=5,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "RandomState range" in result.stderr
+    assert "mikasa_robo_suite" not in result.stderr
