@@ -18,7 +18,12 @@ def test_catalog_resolution_and_category_guard(tmp_path):
         json.dumps(
             {
                 "suite": [
-            {"id": 7, "name": "visual", "category": "Light Conditions", "difficulty_level": 2},
+                    {
+                        "id": 7,
+                        "name": "visual",
+                        "category": "Light Conditions",
+                        "difficulty_level": 2,
+                    },
                     {"id": 8, "name": "robot", "category": "Robot Position", "difficulty_level": 3},
                 ]
             }

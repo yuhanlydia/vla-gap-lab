@@ -1,0 +1,11 @@
+# Install inside the pinned MIKASA-Robo uv environment after `uv sync --frozen`.
+accelerate==0.30.1
+bitsandbytes==0.43.1
+diffusers==0.30.0
+draccus==0.10.0
+peft==0.11.1
+protobuf==3.20.3
+tensorflow-metadata==1.15.0
+timm==0.9.16
+torchvision==0.17.1
+# Transformers must use the OpenVLA-OFT attention fork; see scripts/README.md.

@@ -44,7 +44,8 @@ The current development machine has a 16 GB RTX A4000. Configs therefore support
 - [x] Umbrella repository and official source pins
 - [x] Track 1: paired LIBERO-Plus rendering, extraction adapter, ridge probes, and causal intervention
 - [ ] Track 1: ControlSkip and LIBERO-Plus evaluation
-- [ ] Track 2: memory interventions + inertia metrics
+- [x] Track 2: real MIKASA simulator + mu-VLA memory/action/proprio smoke path
+- [x] Track 2: memory interventions + inertia metrics
 - [ ] Track 2: conflict-adaptive refresh
 - [ ] Track 3: layerwise portability probes
 - [ ] Track 3: hidden-state transport and distillation

@@ -30,3 +30,24 @@ python3 scripts/extract_openvla_pair_hidden.py \
 
 On minimal Ubuntu images, install `python3.10-dev` first. The current PyTorch
 Triton backend compiles a small CUDA helper and requires `Python.h`.
+
+## MIKASA + mu-VLA memory smoke
+
+MIKASA is kept in its own locked environment because its official stack pins
+Torch 2.2.1 and NumPy 1.23.5:
+
+```bash
+cd external/MIKASA-Robo
+uv sync --frozen
+uv pip install -r ../../requirements/track2-extra.txt --python .venv/bin/python
+uv pip install \
+  'transformers @ git+https://github.com/moojink/transformers-openvla-oft.git' \
+  --python .venv/bin/python
+PYTHONPATH=../../src uv run python ../../scripts/smoke_mu_vla_mikasa.py \
+  --checkpoint ../../models/mu-vla-m64-k2 \
+  --output ../../artifacts/smoke/mu_vla_mikasa.json
+```
+
+The adapter supplies only the two tiny Prismatic modules imported by the
+checkpoint's remote code. This avoids importing the unrelated TensorFlow/RLDS
+training pipeline into simulator inference.

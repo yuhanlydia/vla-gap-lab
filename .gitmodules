@@ -7,3 +7,6 @@
 [submodule "external/X-VLA"]
 	path = external/X-VLA
 	url = https://github.com/2toinf/X-VLA.git
+[submodule "external/MIKASA-Robo"]
+	path = external/MIKASA-Robo
+	url = https://github.com/CognitiveAISystems/MIKASA-Robo.git
