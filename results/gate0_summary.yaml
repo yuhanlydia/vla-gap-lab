@@ -1,10 +1,11 @@
-schema_version: 1
+schema_version: 2
 generated_from_local_pilots: true
 official_benchmark_claim: false
 
 tracks:
   latent_action:
     gate_passed: false
+    protocol_complete: false
     method_training_started: false
     decisive_variant: libero_spatial_task_index_611
     evidence:
@@ -12,11 +13,16 @@ tracks:
       representation_retention_max: 0.6076238734
       representation_threshold: 0.8
       control_threshold: 0.7
+      offline_states: 480
+    protocol_deviations:
+      - offline states 480 is below the preregistered minimum of 2000
+      - one decisive Camera variant was used instead of the four-shift protocol
     reason: control failed, but the action representation did not survive the camera shift
     document: docs/results/track1_camera611_n480.md
 
   memory_revision:
     gate_passed: false
+    protocol_complete: false
     method_training_started: false
     decisive_task: ShellGameShuffleTouch-VLA-v0
     evidence:
@@ -26,11 +32,15 @@ tracks:
       first_swap_slot_balanced_accuracy: 0.343
       causal_success_gain_pp: 0.0
       required_causal_success_gain_pp: 10.0
+    protocol_deviations:
+      - episodes 24 is below the canonical 50 episodes per task
+      - only one dynamic tracking task was evaluated causally
     reason: representation diagnostic supports early revision failure, but no valid causal success gain
     document: docs/results/track2_memory_content_probe.md
 
   state_transport:
     gate_passed: false
+    protocol_complete: false
     method_training_started: false
     decisive_task: blocks_ranking_rgb
     evidence:
@@ -41,6 +51,9 @@ tracks:
       permutation_p_value: 0.1357
       retrieval_margin: -0.0088
       required_cross_phase_accuracy: 0.8
+    protocol_deviations:
+      - paired reset states are not semantic-phase-aligned trajectories
+      - only Aloha and Franka on one task were evaluated
     reason: reset-state retrieval did not survive sample expansion and semantic phases remain unavailable
     document: docs/results/track3_paired_reset.md
 

@@ -108,7 +108,9 @@ The report intentionally excludes environment variables and credentials.
 
 ## Results log
 
-- [Machine-readable Gate-0 summary](results/gate0_summary.yaml)
+- [Machine-readable Gate-0 summary](results/gate0_summary.yaml) — distinguishes
+  a failed pilot from a completed formal protocol and records every known
+  sample-size or task-coverage deviation.
 
 - [Track 1 smoke-scale preliminary diagnostic](docs/results/track1_preliminary.md)
 - [Track 1 causal-utilization diagnostic](docs/results/track1_causal_utilization.md)

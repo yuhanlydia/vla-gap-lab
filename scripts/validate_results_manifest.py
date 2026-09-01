@@ -21,7 +21,10 @@ def main() -> None:
             {
                 "valid": True,
                 "tracks": {
-                    name: {"gate_passed": result["gate_passed"]}
+                    name: {
+                        "gate_passed": result["gate_passed"],
+                        "protocol_complete": result["protocol_complete"],
+                    }
                     for name, result in report["tracks"].items()
                 },
             },
