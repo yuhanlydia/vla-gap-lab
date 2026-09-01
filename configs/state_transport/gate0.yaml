@@ -1,0 +1,10 @@
+track: state_transport
+seed: 42
+source_embodiment: aloha_agilex
+target_embodiments: [franka_panda, arx_x5]
+tasks: [blocks_ranking_rgb, blocks_ranking_size, click_bell, handover_mic, move_stapler_pad, place_cans_plasticbox]
+target_demos: [10, 25, 50]
+gate:
+  cross_phase_accuracy_min: 0.8
+  embodiment_separation_margin: 0.1
+
