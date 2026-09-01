@@ -59,3 +59,22 @@ PYTHONPATH=../../src uv run python ../../scripts/eval_mu_vla_intervention.py \
   --checkpoint ../../models/mu-vla-m64-k2 --task RememberColor3-VLA-v0 \
   --mode normal --episodes 1 --output ../../artifacts/mikasa/remember_color_normal.json
 ```
+
+## X-VLA layer capture
+
+Use an isolated environment with the host's CUDA-compatible Torch. Installing
+a fresh Torch currently selects CUDA 13 wheels, which are incompatible with
+the development machine's CUDA 12.8 driver:
+
+```bash
+python3 -m venv --system-site-packages .venv-xvla
+uv pip install --no-deps -r requirements/track3-inference.txt \
+  tokenizers==0.21.4 --python .venv-xvla/bin/python
+TRANSFORMERS_NO_TF=1 .venv-xvla/bin/python scripts/smoke_xvla_layers.py \
+  --checkpoint models/x-vla-robotwin2 \
+  --output artifacts/smoke/xvla_layers.json
+```
+
+The smoke captures action-token states after seven of the 24 flow-transformer
+blocks. This is the domain-conditioned control stack; Florence encoder layers
+will be captured separately for the domain-agnostic task-state probe.

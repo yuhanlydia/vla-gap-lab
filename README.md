@@ -47,7 +47,8 @@ The current development machine has a 16 GB RTX A4000. Configs therefore support
 - [x] Track 2: real MIKASA simulator + mu-VLA memory/action/proprio smoke path
 - [x] Track 2: memory interventions + inertia metrics
 - [ ] Track 2: conflict-adaptive refresh
-- [ ] Track 3: layerwise portability probes
+- [x] Track 3: real X-VLA checkpoint load, action forward, and layer capture
+- [ ] Track 3: layerwise portability probes on paired RoboTwin trajectories
 - [ ] Track 3: hidden-state transport and distillation
 
 Validated Track 1 model-load path on the development machine:
