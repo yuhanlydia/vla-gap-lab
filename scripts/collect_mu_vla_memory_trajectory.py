@@ -32,9 +32,48 @@ def current_target_slot(env, elapsed: int) -> tuple[int, int, str]:
         phase = "shuffle"
     else:
         completed, phase = swaps, "manipulation"
-    target_mug = scalar_int(base.cup_with_ball_number)
+    # ShellGameTouch exposes the hidden object as ``cup_with_ball_number``.
+    # The color-lamp tracking task instead hides three colored balls and
+    # reveals the target color only during manipulation; its equivalent
+    # persistent identity is ``target_color``.  Keep the label semantics
+    # explicit so a privileged slot intervention can preserve identity while
+    # changing only the current slot.
+    if hasattr(base, "cup_with_ball_number"):
+        target_mug = scalar_int(base.cup_with_ball_number)
+    elif hasattr(base, "target_color"):
+        target_mug = scalar_int(base.target_color)
+    else:
+        raise AttributeError(
+            "environment must expose cup_with_ball_number or target_color for tracking labels"
+        )
     slot = scalar_int(base.slot_of_mug[0, completed, target_mug])
     return slot, completed, phase
+
+
+def current_target_identity(env) -> int:
+    """Return the persistent hidden identity used by the task."""
+    base = env.unwrapped
+    if hasattr(base, "cup_with_ball_number"):
+        return scalar_int(base.cup_with_ball_number)
+    if hasattr(base, "target_color"):
+        return scalar_int(base.target_color)
+    raise AttributeError(
+        "environment must expose cup_with_ball_number or target_color for tracking labels"
+    )
+
+
+def target_identity_semantics(env) -> str:
+    """Describe whether the task's target identity is hidden during the cue."""
+    base = env.unwrapped
+    if hasattr(base, "cup_with_ball_number"):
+        return "hidden_target_mug"
+    if hasattr(base, "target_color"):
+        # Color-lamp tasks reveal this label at manipulation; it is not a
+        # hidden identity that can be causally preserved through shuffling.
+        return "lamp_target_color_revealed_at_manipulation"
+    raise AttributeError(
+        "environment must expose cup_with_ball_number or target_color for tracking labels"
+    )
 
 
 def main() -> None:
@@ -118,6 +157,7 @@ def main() -> None:
             "episodes": episode_summaries,
             "memory_timing": "before current observation update",
             "target_slot": "simulator slot of target mug after completed swaps at current observation",
+            "target_identity_semantics": target_identity_semantics(env),
         }
         save_trajectory_atomic(args.output, rows, metadata)
 
@@ -145,7 +185,7 @@ def main() -> None:
                 rows["episode"].append(episode_index)
                 rows["step"].append(elapsed)
                 rows["phase"].append(phase)
-                rows["target_mug"].append(scalar_int(env.unwrapped.cup_with_ball_number))
+                rows["target_mug"].append(current_target_identity(env))
                 rows["target_slot"].append(slot)
                 rows["completed_swaps"].append(completed)
                 action = policy.forward(obs).to(env.unwrapped.device)

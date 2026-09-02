@@ -61,8 +61,20 @@ tracks:
         reset_successes: 13
         reset_minus_normal_bootstrap_95_ci: [-0.82, -0.58]
         reset_mcnemar_exact_two_sided_p: 5.8207660913e-11
+      secondary_tracking_control:
+        task: ShellGameShuffleColorLampTouch-VLA-v0
+        episodes: 50
+        normal_successes: 0
+        freeze_successes: 2
+        reset_successes: 0
+        normal_sr: 0.0
+        freeze_sr: 0.04
+        reset_sr: 0.0
+        freeze_minus_normal_mcnemar_exact_two_sided_p: 0.5
+        target_identity_semantics: lamp_target_color_revealed_at_manipulation
     protocol_deviations:
-      - only one dynamic tracking task was evaluated causally
+      - only one identity-preserving dynamic tracking task was evaluated causally
+      - the secondary color-lamp task is a negative/control replication because its target color is revealed at manipulation
     reason: representation diagnostic supports early revision failure, but no valid causal success gain
     document: docs/results/track2_memory_content_probe.md
 

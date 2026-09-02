@@ -6,6 +6,27 @@ import pytest
 from vla_gap_lab.trajectory_io import load_trajectory_for_resume, save_trajectory_atomic
 
 
+def test_color_lamp_identity_fallback() -> None:
+    # The collector supports both canonical ShellGame and color-lamp tasks;
+    # keep this small contract test independent of the simulator.
+    import importlib.util
+    from pathlib import Path
+
+    path = Path(__file__).parents[1] / "scripts" / "collect_mu_vla_memory_trajectory.py"
+    spec = importlib.util.spec_from_file_location("collector", path)
+    collector = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(collector)
+
+    class Env:
+        class Unwrapped:
+            target_color = 2
+
+        unwrapped = Unwrapped()
+
+    assert collector.current_target_identity(Env()) == 2
+
+
 def rows() -> dict[str, list]:
     return {
         "memory": [np.ones((2, 3))],

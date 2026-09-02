@@ -22,6 +22,9 @@ result.
    updates: normal is 48/50 versus post-cue freeze 32/50 (paired p=0.000145).
    Destructive reset is 13/50 (paired p=5.82e-11), confirming that clearing
    persistent history is strongly harmful.
+   A 50-seed color-lamp tracking replication was negative/control evidence
+   (normal 0/50, freeze 2/50, reset 0/50): its target color is revealed only
+   at manipulation, so it cannot serve as an identity-preserving slot test.
 3. Reset-state X-VLA transport does not robustly exceed its correspondence-null
    distribution. Reset layouts are not semantic task phases, so this diagnostic
    cannot satisfy the formal cross-embodiment hypothesis.

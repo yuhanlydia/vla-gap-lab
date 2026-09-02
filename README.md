@@ -132,5 +132,6 @@ The report intentionally excludes environment variables and credentials.
 - [Track 2 static-memory intervention smoke](docs/results/track2_static_smoke.md)
 - [Track 2 dynamic-tracking Gate-0](docs/results/track2_tracking_gate.md)
 - [Track 2 dynamic memory-content probe](docs/results/track2_memory_content_probe.md)
+- [Track 2 color-lamp tracking replication](docs/results/track2_color_lamp_replication.md)
 - [Track 3 official Aloha trajectory/hidden-state smoke](docs/results/track3_aloha_smoke.md)
 - [Track 3 paired Aloha/Franka reset-state diagnostic](docs/results/track3_paired_reset.md)

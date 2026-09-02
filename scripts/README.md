@@ -90,6 +90,11 @@ Re-running with `--resume` validates checkpoint/task/seed/pooling metadata and
 continues from the next episode without repeating seeds. Lower
 `--checkpoint-every` for more frequent recovery points.
 
+The collector also accepts `ShellGameShuffleColorLampTouch-VLA-v0`; in that
+task `target_color` is revealed by the lamp during manipulation, so metadata
+marks it as a negative/control replication rather than a hidden
+identity-preserving tracking task.
+
 ## OpenVLA causal utilization
 
 Use a separate system-site-packages environment. OpenVLA's Prismatic vision
