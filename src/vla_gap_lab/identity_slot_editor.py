@@ -109,7 +109,7 @@ class IdentitySlotEditor:
             raise ValueError("edit_norm must be non-negative")
 
     @classmethod
-    def from_npz(cls, path: str) -> "IdentitySlotEditor":
+    def from_npz(cls, path: str) -> IdentitySlotEditor:
         data = np.load(path, allow_pickle=False)
         return cls(
             token_indices=torch.from_numpy(data["token_indices"]),
