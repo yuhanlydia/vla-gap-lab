@@ -1,0 +1,48 @@
+track: memory_revision
+hypothesis: identity_location_revision_gap
+
+checkpoints:
+  k2: mu-vla/mu-vla-openvla-oft-mikasa-robo-5-tasks-m64-k2-tbptt
+  k8: mu-vla/mu-vla-openvla-oft-mikasa-robo-5-tasks-m64-k8-tbptt
+
+horizon_pilot:
+  tasks:
+    - ShellGameShuffleTouch-VLA-v0
+    - ShellGameShuffleTouch-Long-VLA-v0
+  episodes_per_task_per_checkpoint: 30
+  start_seed: 4242474242
+  stop_ipsi_if_primary_k8_minus_k2_pp_at_least: 20
+
+editor_fit:
+  checkpoint: k2
+  task: ShellGameShuffleTouch-VLA-v0
+  pooling: strided
+  token_stride: 8
+  episodes: 100
+  start_seed: 4242424242
+  train_episodes: 80
+  dev_episodes: 20
+  pca_dim: 256
+  ridge_alpha_grid: [1, 10, 100, 1000]
+  edit_scale_multipliers: [0.25, 0.5, 1, 2]
+  scale_selection_uses_closed_loop_success: false
+
+causal_gate1:
+  checkpoint: k2
+  primary_task: ShellGameShuffleTouch-VLA-v0
+  replication_task: ShellGameShuffleTouch-Long-VLA-v0
+  conditions: [normal, random_orthogonal, slot_only, ipsi]
+  revision_event: each_swap
+  primary_episodes_per_condition: 50
+  replication_episodes_per_condition: 50
+  start_seed: 4242524242
+  use_primary_editor_for_replication: true
+  negative_control_task: ShellGameShuffleColorLampTouch-VLA-v0
+
+gate:
+  ipsi_minus_normal_pp_min: 10
+  ipsi_vs_normal_paired_ci_lower_min: 0
+  ipsi_minus_random_pp_min: 8
+  slot_accuracy_gain_pp_min: 15
+  identity_accuracy_loss_pp_max: 5
+  require_identity_preservation_mechanism: true
