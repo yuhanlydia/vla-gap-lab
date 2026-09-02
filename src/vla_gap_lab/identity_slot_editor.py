@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 
+
 def identity_orthogonal_projector(identity_weights: torch.Tensor) -> torch.Tensor:
     """Project vectors onto the orthogonal complement of identity directions.
 
