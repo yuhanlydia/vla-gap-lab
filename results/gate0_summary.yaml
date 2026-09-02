@@ -57,10 +57,10 @@ tracks:
         freeze_successes: 32
         freeze_minus_normal_bootstrap_95_ci: [-0.46, -0.18]
         freeze_mcnemar_exact_two_sided_p: 0.0001449585
-        reset_episodes: 10
-        reset_successes: 2
-        reset_minus_normal_bootstrap_95_ci: [-1.0, -0.5]
-        reset_mcnemar_exact_two_sided_p: 0.0078125
+        reset_episodes: 50
+        reset_successes: 13
+        reset_minus_normal_bootstrap_95_ci: [-0.82, -0.58]
+        reset_mcnemar_exact_two_sided_p: 5.8207660913e-11
     protocol_deviations:
       - only one dynamic tracking task was evaluated causally
     reason: representation diagnostic supports early revision failure, but no valid causal success gain

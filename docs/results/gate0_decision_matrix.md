@@ -20,8 +20,8 @@ result.
 2. Released μVLA memory retains hidden target identity longer than it tracks
    the target's revised slot. Static `RememberColor3` also depends on continued
    updates: normal is 48/50 versus post-cue freeze 32/50 (paired p=0.000145).
-   The n=10 destructive-reset control is 2/10 versus normal 10/10, confirming
-   that clearing persistent history is harmful.
+   Destructive reset is 13/50 (paired p=5.82e-11), confirming that clearing
+   persistent history is strongly harmful.
 3. Reset-state X-VLA transport does not robustly exceed its correspondence-null
    distribution. Reset layouts are not semantic task phases, so this diagnostic
    cannot satisfy the formal cross-embodiment hypothesis.
