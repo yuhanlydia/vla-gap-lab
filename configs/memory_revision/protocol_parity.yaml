@@ -1,0 +1,33 @@
+track: memory_revision
+stage: released_checkpoint_protocol_parity
+
+checkpoint:
+  name: k2
+  hub_id: mu-vla/mu-vla-openvla-oft-mikasa-robo-5-tasks-m64-k2-tbptt
+
+hardware:
+  primary_gpu_vram_gb: 16
+  primary_precision: 4bit
+  closed_loop_num_envs: 1
+  reason: recurrent memory must advance once per simulator step; do not trade protocol fidelity for vectorized throughput before parity is established
+  bf16_confirmation_gpu_vram_gb: 24
+  bf16_confirmation_only_if_4bit_parity_fails: true
+
+evaluation:
+  episodes_per_task: 20
+  start_seed: 4242424242
+  success_metric: success_once
+  preprocessing: official_224_center_crop_0.9
+  receding_horizon: true
+  tasks:
+    ShellGamePush-VLA-v0:
+      released_k2_sr: 0.96
+    InterceptMedium-VLA-v0:
+      released_k2_sr: 0.55
+    RememberColor5-VLA-v0:
+      released_k2_sr: 0.94
+  absolute_tolerance_pp: 20
+
+stop_rule:
+  parity_must_pass_before_gate2: true
+  if_4bit_fails: run_same_task_bf16_on_24gb_before_debugging_science
