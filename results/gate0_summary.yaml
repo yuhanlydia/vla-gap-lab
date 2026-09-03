@@ -61,26 +61,38 @@ tracks:
         reset_successes: 13
         reset_minus_normal_bootstrap_95_ci: [-0.82, -0.58]
         reset_mcnemar_exact_two_sided_p: 5.8207660913e-11
-      secondary_tracking_control:
-        task: ShellGameShuffleColorLampTouch-VLA-v0
-        episodes: 50
-        normal_successes: 0
-        freeze_successes: 2
-        reset_successes: 0
-        normal_sr: 0.0
-        freeze_sr: 0.04
-        reset_sr: 0.0
-        freeze_minus_normal_mcnemar_exact_two_sided_p: 0.5
-        target_identity_semantics: lamp_target_color_revealed_at_manipulation
+      horizon_pilot:
+        short_task: ShellGameShuffleTouch-VLA-v0
+        short_k2_successes: 0
+        short_k8_successes: 1
+        short_episodes: 30
+        long_task: ShellGameShuffleTouch-Long-VLA-v0
+        long_k2_successes: 2
+        long_k8_successes: 1
+        long_episodes: 30
       identity_preserving_intervention:
-        status: blocked
-        reason: checkpoint exposes one opaque recurrent memory tensor without an identity/slot factorization
-        document: docs/results/track2_identity_preserving_blocker.md
+        status: failed
+        task: ShellGameShuffleTouch-VLA-v0
+        episodes_per_condition: 50
+        normal_sr: 0.0
+        random_orthogonal_sr: 0.0
+        slot_only_sr: 0.02
+        ipsi_sr: 0.02
+        ipsi_minus_normal_pp: 2.0
+        slot_probe_gain_pp: 67.95
+        identity_accuracy_change_pp: 0.0
+        document: docs/results/track2_identity_location_gate1.md
+      followup:
+        status: protocol_parity_required
+        hypothesis: storage_dynamics_gap
+        task: InterceptMedium-VLA-v0
+        protocol: docs/experiments/track2_predictive_dynamics_gate2.md
+        reason: ShuffleTouch is a held-out different-memory-structure task on which the released checkpoint has near-zero base competence; move the next diagnostic in distribution
     protocol_deviations:
-      - only one identity-preserving dynamic tracking task was evaluated causally
-      - the secondary color-lamp task is a negative/control replication because its target color is revealed at manipulation
-    reason: representation diagnostic supports early revision failure, but no valid causal success gain
-    document: docs/results/track2_memory_content_probe.md
+      - original Gate-0 used a held-out tracking task with near-zero base policy success
+      - historical local adapter did not explicitly reproduce the released 224px resize plus 0.9 center crop; Gate-2 uses a protocol-matched wrapper
+    reason: Identity-Location Gate-1 failed behaviorally despite successful latent editing; no memory method training is authorized
+    document: docs/results/track2_direction_reassessment.md
 
   state_transport:
     gate_passed: false
