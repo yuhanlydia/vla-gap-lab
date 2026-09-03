@@ -61,9 +61,10 @@ def main() -> None:
         obs_mode="rgb",
         control_mode="pd_ee_delta_pose",
         reward_mode="normalized_dense",
-        render_mode="all",
+        render_mode="rgb_array",
         sim_backend="gpu",
     )
+    # Render-only overlays do not enter obs['rgb']; omit them to save work.
     env = apply_mikasa_vla_wrappers(env, include_overlays=False)
     base = env.unwrapped
     required = ("ball", "goal_region", "oracle_info", "agent", "reached_status")
@@ -90,6 +91,7 @@ def main() -> None:
                 "precision": args.precision,
                 "pooling": args.pooling,
                 "preprocess": "official_224_center_crop_0.9",
+                "render_mode": "rgb_array",
             }
             if path.exists() and args.resume:
                 _, metadata = load_episode_npz(path)
