@@ -8,4 +8,8 @@ protobuf==3.20.3
 tensorflow-metadata==1.15.0
 timm==0.9.16
 torchvision==0.17.1
-# Transformers must use the OpenVLA-OFT attention fork; see scripts/README.md.
+tokenizers==0.19.1
+# mu-VLA requires this memory-aware Transformers fork. Do not substitute the
+# generic PyPI package or the OpenVLA-OFT fork: the custom memory attention
+# semantics are part of the released checkpoint's inference contract.
+transformers @ git+https://github.com/CognitiveAISystems/transformers-mu-openvla-oft.git@9dbc09f574912a45dd0d71354c035e3c37bcce9e

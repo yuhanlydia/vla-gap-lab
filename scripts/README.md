@@ -35,19 +35,26 @@ Triton backend compiles a small CUDA helper and requires `Python.h`.
 ## MIKASA + mu-VLA memory smoke
 
 MIKASA is kept in its own locked environment because its official stack pins
-Torch 2.2.1 and NumPy 1.23.5:
+Torch 2.2.1 and NumPy 1.23.5. Track 2 additionally pins the exact
+**memory-aware** Transformers fork used by the released mu-VLA checkpoint.
+Do not install `moojink/transformers-openvla-oft` in this environment: it is a
+different fork and does not implement the released memory attention contract.
 
 ```bash
 cd external/MIKASA-Robo
 uv sync --frozen
 uv pip install -r ../../requirements/track2-extra.txt --python .venv/bin/python
-uv pip install \
-  'transformers @ git+https://github.com/moojink/transformers-openvla-oft.git' \
-  --python .venv/bin/python
+PYTHONPATH=../../src uv run python ../../scripts/check_mu_vla_runtime.py
 PYTHONPATH=../../src uv run python ../../scripts/smoke_mu_vla_mikasa.py \
   --checkpoint ../../models/mu-vla-m64-k2 \
   --output ../../artifacts/smoke/mu_vla_mikasa.json
 ```
+
+If this environment was created before the runtime fix, reinstall the Track-2
+requirements before running any parity or Gate-2 experiment. The runtime check
+fails if Transformers is not the exact
+`CognitiveAISystems/transformers-mu-openvla-oft` commit used by the official
+mu-VLA release.
 
 The adapter supplies only the two tiny Prismatic modules imported by the
 checkpoint's remote code. This avoids importing the unrelated TensorFlow/RLDS

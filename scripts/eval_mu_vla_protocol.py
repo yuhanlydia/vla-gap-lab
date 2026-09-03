@@ -86,8 +86,9 @@ def main() -> None:
 
     def checkpoint() -> dict:
         report = {
-            "schema_version": 1,
+            "schema_version": 2,
             **expected,
+            "runtime_provenance": policy.runtime_provenance,
             "episodes": episodes,
             "success_rate": float(
                 np.mean([row["success"] for row in episodes])
@@ -101,8 +102,13 @@ def main() -> None:
     try:
         for episode_index in range(len(episodes), args.episodes):
             seed = args.start_seed + episode_index
-            obs, _ = env.reset(seed=seed)
+            obs, reset_info = env.reset(seed=seed)
             policy.reset()
+            if isinstance(reset_info, dict) and "language_instruction" in reset_info:
+                instruction = reset_info["language_instruction"]
+                if isinstance(instruction, (list, np.ndarray)):
+                    instruction = instruction[0]
+                policy.instruction = str(instruction)
             success = False
             total_reward = 0.0
             for step in range(int(env.max_episode_steps)):

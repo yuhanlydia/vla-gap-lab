@@ -82,17 +82,27 @@ tracks:
         slot_probe_gain_pp: 67.95
         identity_accuracy_change_pp: 0.0
         document: docs/results/track2_identity_location_gate1.md
+      runtime_audit:
+        status: protocol_compromised
+        historical_transformers_fork: moojink/transformers-openvla-oft
+        required_transformers_fork: CognitiveAISystems/transformers-mu-openvla-oft
+        required_transformers_commit: 9dbc09f574912a45dd0d71354c035e3c37bcce9e
+        historical_action_clipping_missing: true
+        mikasa_v1_code_difference_ruled_out: true
+        document: docs/results/track2_runtime_root_cause.md
       followup:
-        status: protocol_parity_required
+        status: runtime_repair_then_protocol_parity
         hypothesis: storage_dynamics_gap
         task: InterceptMedium-VLA-v0
         protocol: docs/experiments/track2_predictive_dynamics_gate2.md
-        reason: ShuffleTouch is a held-out different-memory-structure task on which the released checkpoint has near-zero base competence; move the next diagnostic in distribution
+        reason: historical Track-2 runtime used the wrong Transformers attention fork; repair runtime and pass in-distribution parity before any new mechanism claim
     protocol_deviations:
       - original Gate-0 used a held-out tracking task with near-zero base policy success
-      - historical local adapter did not explicitly reproduce the released 224px resize plus 0.9 center crop; Gate-2 uses a protocol-matched wrapper
-    reason: Identity-Location Gate-1 failed behaviorally despite successful latent editing; no memory method training is authorized
-    document: docs/results/track2_direction_reassessment.md
+      - historical Track-2 setup installed a non-memory Transformers fork, so absolute SRs are not faithful released-mu-VLA benchmark results until replicated
+      - historical local adapter omitted the released evaluator action clip to [-1, 1]
+      - historical local adapter did not explicitly reproduce the released 224px resize plus 0.9 center crop
+    reason: historical Track-2 scores are protocol-compromised; repair runtime and rerun minimal train-task parity before interpreting memory mechanisms
+    document: docs/results/track2_runtime_root_cause.md
 
   state_transport:
     gate_passed: false
