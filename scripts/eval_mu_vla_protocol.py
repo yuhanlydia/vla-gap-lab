@@ -39,6 +39,7 @@ def main() -> None:
         "start_seed": args.start_seed,
         "precision": args.precision,
         "preprocess": "official_224_center_crop_0.9",
+        "render_mode": "rgb_array",
     }
     episodes = []
     if args.resume and args.output.exists():
@@ -71,9 +72,11 @@ def main() -> None:
         obs_mode="rgb",
         control_mode="pd_ee_delta_pose",
         reward_mode="normalized_dense",
-        render_mode="all",
+        render_mode="rgb_array",
         sim_backend="gpu",
     )
+    # Task-specific overlay wrappers modify only human-facing render(); leaving
+    # them off does not change obs['rgb'] and saves unnecessary 16GB-GPU work.
     env = apply_mikasa_vla_wrappers(env, include_overlays=False)
     policy = ProtocolMatchedMuVLAPolicy(
         args.checkpoint,
