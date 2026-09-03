@@ -1,0 +1,61 @@
+track: memory_revision
+hypothesis: storage_dynamics_gap
+status: blocked_until_protocol_parity_passes
+
+benchmark:
+  task: InterceptMedium-VLA-v0
+  relation_to_checkpoint: in_distribution_training_task
+  rationale: released K2 memory checkpoint gains little over the released no-memory baseline on a task that requires temporal motion information, while the same memory mechanism strongly helps static recall tasks
+
+collector:
+  checkpoint: mu-vla/mu-vla-openvla-oft-mikasa-robo-5-tasks-m64-k2-tbptt
+  episodes: 40
+  start_seed: 4242624242
+  precision: 4bit
+  pooling: strided
+  memory_token_indices: [0, 8, 16, 24, 32, 40, 48, 56]
+  preprocessing: official_224_center_crop_0.9
+  atomic_output_per_episode: true
+  collect_before_and_after_memory: true
+  labels:
+    - ball_position_xy
+    - ball_velocity_xy
+    - initial_velocity_xy
+    - goal_position_xy
+    - tcp_position_xy
+    - reached_status
+
+probe:
+  train_episodes: 24
+  dev_episodes: 8
+  test_episodes: 8
+  split_seed: 0
+  min_step: 2
+  pre_contact_only: true
+  pca_dim: 128
+  pca_batch_size: 256
+  ridge_alpha_grid: [0.1, 1, 10, 100]
+  feature_sets: [memory_before, memory_after, memory_delta]
+
+hardware:
+  primary_gpu_vram_gb: 16
+  inference_precision: 4bit
+  closed_loop_num_envs: 1
+  offline_pca_batch_size: 256
+  note: closed-loop recurrent inference is deliberately batch-1 for protocol fidelity; batching is used aggressively after state caching where episodes are independent
+
+decision:
+  storage_dynamics_gap:
+    memory_after_position_r2_min: 0.50
+    memory_after_velocity_r2_max: 0.20
+  dynamics_represented:
+    memory_after_velocity_r2_min: 0.50
+    next_experiment: causal_dynamics_to_control_utilization
+  dynamics_in_update:
+    delta_minus_state_velocity_r2_min: 0.15
+    next_experiment: test_memory_update_readout
+  otherwise: stop_without_method
+
+method_authorization:
+  train_new_memory_method_before_gate: false
+  allowed_after_storage_dynamics_gap: temporal_operator_only_after_causal_confirmation
