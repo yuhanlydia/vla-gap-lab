@@ -1,23 +1,23 @@
 # VLA Gap Lab
 
-Reproducible Gate-0 experiments for three failure hypotheses in existing VLA benchmarks:
+Reproducible phenomenon-first experiments for failure hypotheses in existing VLA benchmarks:
 
-1. **Latent-to-Action Utilization Gap** — LIBERO-Plus + OpenVLA-OFT.
-2. **Persistence-Revision Gap** — MIKASA-Robo-VLA + mu-VLA.
-3. **Cross-Embodiment State Transport** — RoboTwin 2.0 + X-VLA.
+1. **Latent-to-Action Utilization Gap** — LIBERO-Plus + OpenVLA-OFT (Gate not passed).
+2. **VLA Memory Structure** — MIKASA-Robo-VLA + mu-VLA. Identity–Location Gate-1 failed; active diagnostic is the **Storage–Dynamics Gap** on an in-distribution predictive task.
+3. **Cross-Embodiment State Transport** — RoboTwin 2.0 + X-VLA (paused until semantic-phase trajectories are available).
 
 The project deliberately does not introduce a new benchmark. Each track starts with a cheap diagnostic and only trains a minimal mechanism when its preregistered gate passes.
 
 ## Repository layout
 
 ```text
-configs/                    Experiment manifests and Gate-0 thresholds
+configs/                    Experiment manifests and preregistered thresholds
 src/vla_gap_lab/            Shared extraction, probes, interventions, statistics
-tracks/latent_action/       LIBERO-Plus diagnostic and ControlSkip
-tracks/memory_revision/     mu-VLA interventions and adaptive refresh
-tracks/state_transport/     X-VLA probes, transport, and distillation
-scripts/                    Setup, download, smoke, train, and evaluation entrypoints
-tests/                      Unit and integration tests with synthetic tensors
+tracks/latent_action/       LIBERO-Plus diagnostics
+tracks/memory_revision/     mu-VLA memory diagnostics
+tracks/state_transport/     X-VLA probes and transport diagnostics
+scripts/                    Setup, collection, probes, and evaluation entrypoints
+tests/                      Unit and CLI regression tests
 external/                   Pinned official repositories (git submodules)
 artifacts/                  Local logs/checkpoints (gitignored)
 data/                       Local datasets (gitignored)
@@ -25,114 +25,105 @@ data/                       Local datasets (gitignored)
 
 ## Execution policy
 
-Each track follows the same progression:
-
 ```text
-environment check -> data/model manifest -> smoke test -> Gate-0 diagnostic
+environment check -> model/protocol parity -> cheap diagnostic
     -> STOP if threshold fails
-    -> minimal mechanism training if threshold passes -> official closed-loop SR
+    -> causal intervention
+    -> STOP again if causal rescue fails
+    -> only then train a minimal mechanism
 ```
 
-No result is reported as an official benchmark result unless it comes from the official simulator protocol. Offline metrics and synthetic smoke tests are labeled separately.
+No result is reported as an official benchmark result unless it comes from the official simulator protocol. Offline probes, privileged interventions, and synthetic smoke tests are labeled separately.
 
-Run the first-party CPU checks without traversing pinned upstream submodules:
+Run first-party CPU checks without traversing pinned upstream submodules:
 
 ```bash
 scripts/check.sh
 ```
 
-Before tagging or handing off a snapshot, build and import the wheel in an
-isolated environment as well:
+Before tagging or handing off a snapshot:
 
 ```bash
 scripts/release_check.sh
 ```
 
-This uses `uv build` so a broken host-global setuptools installation cannot
-silently contaminate the package check.
+## Hardware policy
 
-## Hardware note
+The primary development target is a **16 GB RTX A4000-class GPU**; 24 GB is the optional confirmation tier.
 
-The current development machine has a 16 GB RTX A4000. Configs therefore support hidden-state caching, batch size 1, CPU offload, and optional 4-bit model loading. The target reference setup remains a 24 GB GPU. A failed memory preflight is recorded as a hardware block rather than silently changing the scientific protocol.
+For mu-VLA:
 
-## Status
+- primary inference is NF4 4-bit;
+- recurrent closed-loop evaluation remains `num_envs=1` because memory must advance exactly once per simulator tick and asynchronous vectorization can change the protocol;
+- long collections are crash-safe and store one episode at a time;
+- after state caching, high-dimensional PCA/probe work is batched (`IncrementalPCA` batch 256) so throughput is recovered where batching is scientifically safe;
+- if a 4-bit released-checkpoint parity task fails, repeat only that task in BF16 on a 24 GB GPU before interpreting a scientific failure.
 
-- [x] Umbrella repository and official source pins
-- [x] Track 1: paired LIBERO-Plus rendering, extraction adapter, ridge probes, and causal intervention
-- [x] Track 1: real action-head CUR fault injection on held-out demonstrations
-- [x] Track 1: instruction-matched paired Camera closed-loop pilot (Gate not passed)
-- [x] Track 1: LIBERO-Plus filename-derived language metadata audit
-- [ ] Track 1: ControlSkip and LIBERO-Plus evaluation
-- [x] Track 2: real MIKASA simulator + mu-VLA memory/action/proprio smoke path
-- [x] Track 2: memory interventions + inertia metrics
-- [x] Track 2: phase-aware Tracking Gate-0 (did not pass; no refresh training)
-- [x] Track 2: episode-held-out identity-vs-location memory-content probe
-- [ ] Track 2: conflict-adaptive refresh
-- [x] Track 3: real X-VLA checkpoint load, action forward, and layer capture
-- [x] Track 3: same-seed Aloha/Franka reset renderer and cross-validated transport probe
-- [ ] Track 3: semantic-phase portability probes on paired RoboTwin trajectories
-- [ ] Track 3: hidden-state transport and distillation
+A failed memory preflight is recorded as a hardware/protocol block rather than silently changing the experiment.
 
-Validated Track 1 model-load path on the development machine:
+## Current status
 
-```bash
-pip install -r requirements/track1-inference.txt
-pip install -e external/openvla-oft --no-deps
-python3 scripts/smoke_openvla_load.py \
-  --checkpoint models/openvla-7b-oft-combined \
-  --output artifacts/smoke/openvla_load.json
+- [x] Track 1: paired LIBERO-Plus rendering, hidden extraction, ridge probes, causal utilization, and three-view Camera replication
+- [x] Track 1: original Latent-to-Action hypothesis not supported; no ControlSkip training authorized
+- [x] Track 2: real MIKASA simulator + released mu-VLA checkpoint path
+- [x] Track 2: static memory controls and identity-vs-location probe
+- [x] Track 2: K=2/K=8 ShuffleTouch horizon pilot
+- [x] Track 2: Identity–Location IPSI Gate-1 completed and **failed**
+- [ ] Track 2: released K=2 train-task protocol parity with training-matched preprocessing
+- [ ] Track 2: Predictive-Dynamics Gate-2 on `InterceptMedium-VLA-v0`
+- [x] Track 3: X-VLA load/action/layer capture and reset-state diagnostic
+- [ ] Track 3: semantic-phase portability probes on real paired RoboTwin trajectories
+
+## Track 2 next run
+
+Do **not** rerun or tune IPSI. Follow:
+
+```text
+docs/experiments/track2_predictive_dynamics_gate2.md
 ```
 
-Generate a small paired clean/shift cache from the official simulator and
-original demonstration states:
+The first required run is a 20-episode 4-bit parity check on each of:
 
-```bash
-pip install -r requirements/track1-simulator.txt
-PYTHONPATH=external/LIBERO-plus:src MUJOCO_GL=egl \
-TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 \
-.venv-openvla/bin/python scripts/render_paired_libero_states.py \
-  --task-id 1 --num-demos 10 --num-frames 8 \
-  --output artifacts/pairs/libero_spatial_task_1.npz
+```text
+ShellGamePush-VLA-v0
+InterceptMedium-VLA-v0
+RememberColor5-VLA-v0
 ```
 
-## Sources
+Only after parity passes may the 40-episode Intercept dynamics collection start.
 
-Before a long run, record the exact code revisions, dependency versions, and
-input hashes alongside its artifacts:
+## Reproducibility
+
+Before a long run, record exact revisions and artifact hashes:
 
 ```bash
 PYTHONPATH=src python3 scripts/capture_run_provenance.py \
-  --repository . --repository external/RoboTwin \
+  --repository . --repository external/MIKASA-Robo \
   --artifact results/gate0_summary.yaml \
   --output artifacts/reports/run_provenance.json
 ```
 
 The report intentionally excludes environment variables and credentials.
 
+## Sources
+
 - [LIBERO-Plus](https://github.com/sylvestf/LIBERO-plus)
 - [OpenVLA-OFT](https://github.com/moojink/openvla-oft)
 - [MIKASA-Robo](https://github.com/CognitiveAISystems/MIKASA-Robo)
-- [mu-VLA checkpoint](https://huggingface.co/mu-vla/mu-vla-openvla-oft-mikasa-robo-5-tasks-m64-k2-tbptt)
-- [RoboTwin 2.0](https://github.com/HashimHS/robotwin)
+- [mu-VLA](https://github.com/CognitiveAISystems/muVLA)
+- [mu-VLA K=2 checkpoint](https://huggingface.co/mu-vla/mu-vla-openvla-oft-mikasa-robo-5-tasks-m64-k2-tbptt)
+- [RoboTwin 2.0](https://github.com/RoboTwin-Platform/RoboTwin)
 - [X-VLA](https://github.com/2toinf/X-VLA)
 
 ## Results log
 
-- [Gate-0 decision matrix and next experiments](docs/results/gate0_decision_matrix.md)
-- [Machine-readable Gate-0 summary](results/gate0_summary.yaml) — distinguishes
-  a failed pilot from a completed formal protocol and records every known
-  sample-size or task-coverage deviation.
-
-- [Track 1 smoke-scale preliminary diagnostic](docs/results/track1_preliminary.md)
-- [Track 1 causal-utilization diagnostic](docs/results/track1_causal_utilization.md)
-- [Track 1 instruction-matched closed-loop pilot](docs/results/track1_local_closed_loop.md)
-- [Track 1 480-state Camera representation replication](docs/results/track1_camera_n480.md)
-- [Track 1 large-angle Camera failure and adjacent-view replication](docs/results/track1_camera611_n480.md)
-- [LIBERO-Plus language-metadata audit](docs/results/libero_plus_language_metadata_audit.md)
-- [Track 2 static-memory intervention smoke](docs/results/track2_static_smoke.md)
-- [Track 2 dynamic-tracking Gate-0](docs/results/track2_tracking_gate.md)
-- [Track 2 dynamic memory-content probe](docs/results/track2_memory_content_probe.md)
-- [Track 2 color-lamp tracking replication](docs/results/track2_color_lamp_replication.md)
-- [Track 2 identity-preserving intervention blocker](docs/results/track2_identity_preserving_blocker.md)
-- [Track 3 official Aloha trajectory/hidden-state smoke](docs/results/track3_aloha_smoke.md)
-- [Track 3 paired Aloha/Franka reset-state diagnostic](docs/results/track3_paired_reset.md)
+- [Gate-0 decision matrix](docs/results/gate0_decision_matrix.md)
+- [Machine-readable Gate-0 summary](results/gate0_summary.yaml)
+- [Track 1 large-angle Camera failure](docs/results/track1_camera611_n480.md)
+- [Track 2 static-memory control](docs/results/track2_static_smoke.md)
+- [Track 2 memory-content probe](docs/results/track2_memory_content_probe.md)
+- [Track 2 Short horizon pilot](docs/results/track2_horizon_short_pilot.md)
+- [Track 2 Long horizon pilot](docs/results/track2_horizon_long_pilot.md)
+- [Track 2 failed Identity–Location Gate-1](docs/results/track2_identity_location_gate1.md)
+- [Track 2 direction reassessment](docs/results/track2_direction_reassessment.md)
+- [Track 3 paired reset-state diagnostic](docs/results/track3_paired_reset.md)
