@@ -11,7 +11,22 @@ hardware:
   closed_loop_num_envs: 1
   reason: recurrent memory must advance once per simulator step; do not trade protocol fidelity for vectorized throughput before parity is established
   bf16_confirmation_gpu_vram_gb: 24
-  bf16_confirmation_only_if_4bit_parity_fails: true
+  bf16_confirmation_only_if_4bit_parity_fails_after_asset_parity: true
+
+runtime:
+  transformers_repo: CognitiveAISystems/transformers-mu-openvla-oft
+  transformers_commit: 9dbc09f574912a45dd0d71354c035e3c37bcce9e
+  transformers_version: 4.40.1
+  tokenizers_version: 0.19.1
+
+ycb_asset:
+  required_for_tasks: [ShellGamePush-VLA-v0]
+  repo_id: haosulab/ManiSkill2
+  revision: 4c134e2e33b11b1fa751c1d7b6afb2e89231b875
+  filename: data/mani_skill2_ycb.zip
+  sha256: 174001ba1003cc0c5adda6453f4433f55ec7e804f0f0da22d015d525d02262fb
+  mutable_hf_main_sha_seen_in_failed_run: 1551724fd1ac7bad9807ebcf46dd4a788caed5c9499c1225b9bfa080ffbefcb3
+  installer: scripts/install_track2_ycb_asset.py
 
 evaluation:
   episodes_per_task: 20
@@ -22,12 +37,26 @@ evaluation:
   tasks:
     ShellGamePush-VLA-v0:
       released_k2_sr: 0.96
+      parity_sr_min: 0.76
     InterceptMedium-VLA-v0:
       released_k2_sr: 0.55
+      observed_stage0_sr: 0.45
+      status: pass
     RememberColor5-VLA-v0:
       released_k2_sr: 0.94
+      observed_stage0_sr: 0.90
+      status: pass
   absolute_tolerance_pp: 20
+
+current_replacement_run:
+  rerun_only: ShellGamePush-VLA-v0
+  precision: 4bit
+  episodes: 20
+  start_seed: 4242424242
+  change_only: ycb_asset_revision
 
 stop_rule:
   parity_must_pass_before_gate2: true
-  if_4bit_fails: run_same_task_bf16_on_24gb_before_debugging_science
+  shellgame_asset_pinned_sr_min: 0.76
+  if_shellgame_still_fails: official_vs_local_step_trace_before_any_gate2
+  do_not_repeat_bf16_until_pinned_asset_nf4_is_tested: true
