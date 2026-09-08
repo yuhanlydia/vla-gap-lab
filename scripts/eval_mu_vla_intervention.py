@@ -41,6 +41,7 @@ def main() -> None:
         "revision_step": args.revision_step,
         "revision_event": args.revision_event,
         "start_seed": args.start_seed,
+        "simulator_step_sync": "render_after_step",
     }
     episodes = []
     if args.resume and args.output.exists():
@@ -65,6 +66,7 @@ def main() -> None:
     from mikasa_robo_suite.vla.utils.apply_wrappers import apply_mikasa_vla_wrappers
 
     from vla_gap_lab.mu_vla_adapter import MuVLAPolicy
+    from vla_gap_lab.mu_vla_protocol import step_mikasa_env
 
     env = gym.make(
         args.task,
@@ -108,7 +110,7 @@ def main() -> None:
             success, total_reward = False, 0.0
             for step in range(int(env.max_episode_steps)):
                 action = policy.forward(obs).to(env.unwrapped.device)
-                obs, reward, terminated, truncated, info = env.step(action)
+                obs, reward, terminated, truncated, info = step_mikasa_env(env, action)
                 total_reward += scalar(reward)
                 success = success or bool(scalar(info.get("success", False)))
                 if bool(scalar(terminated)) or bool(scalar(truncated)):

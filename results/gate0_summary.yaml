@@ -90,7 +90,7 @@ tracks:
         historical_action_clipping_missing: true
         document: docs/results/track2_runtime_root_cause.md
       stage0_parity_2026_09_08:
-        status: shellgame_asset_confounded
+        status: passed_after_evaluator_sync_fix
         episodes_per_task: 20
         start_seed: 4242424242
         intercept_medium_sr: 0.45
@@ -100,26 +100,65 @@ tracks:
         shell_game_push_sr_wrong_asset_nf4: 0.0
         shell_game_push_sr_wrong_asset_bf16: 0.0
         shell_game_push_reference_sr: 0.96
+        shell_game_push_fixed_nf4_sr: 1.0
+        shell_game_push_fixed_nf4_successes: 20
         wrong_ycb_archive_sha256: 1551724fd1ac7bad9807ebcf46dd4a788caed5c9499c1225b9bfa080ffbefcb3
         required_ycb_archive_sha256: 174001ba1003cc0c5adda6453f4433f55ec7e804f0f0da22d015d525d02262fb
         required_ycb_revision: 4c134e2e33b11b1fa751c1d7b6afb2e89231b875
+        ycb_025_mug_files_identical_between_archives: true
+        root_cause: local evaluator omitted the official per-step render call required to flush GPU actor pose updates
+        tracked_report: results/track2_stage0_parity_fixed_2026_09_08.json
+        full_artifact_sha256: a70d2a9577854bdac70f99d11bc93fe1a0042ebf160164bd1271e8d22e1354b4
         document: docs/results/track2_ycb_asset_audit_2026-09-08.md
+      predictive_dynamics_gate2_2026_09_08:
+        status: passed_storage_dynamics_gap
+        task: InterceptMedium-VLA-v0
+        episodes: 40
+        start_seed: 4242624242
+        successes: 22
+        success_rate: 0.55
+        train_dev_test_episodes: [24, 8, 8]
+        min_step: 2
+        pre_contact_only: true
+        pca_dim: 128
+        memory_after_position_r2: 0.764926796354646
+        memory_after_velocity_r2: 0.16932112751043632
+        memory_delta_velocity_r2: 0.082329687264933
+        storage_position_r2_min: 0.50
+        storage_velocity_r2_max: 0.20
+        collection_manifest_sha256: 1c4245e66e4a2a925fea685ad0a2f9669f6300f698d308fea93771ca42dd2326
+        full_report_sha256: 321090bb07bc57ac0a7703e0d65e282707776c01e94caa1e016431bda78cee07
+        tracked_report: results/track2_predictive_dynamics_gate2_2026_09_08.json
+        document: docs/results/track2_predictive_dynamics_gate2_2026-09-08.md
       followup:
-        status: pinned_ycb_shellgame_parity_rerun_required
+        status: minimal_causal_temporal_operator_failed_stop_method
         hypothesis: storage_dynamics_gap
-        task_after_parity: InterceptMedium-VLA-v0
-        parity_task_to_rerun: ShellGamePush-VLA-v0
-        parity_threshold_sr_min: 0.76
+        task: InterceptMedium-VLA-v0
         protocol: docs/experiments/track2_predictive_dynamics_gate2.md
-        reason: InterceptMedium and RememberColor5 pass parity; ShellGamePush used a non-pinned YCB mug asset and must be replaced with one same-seed pinned-asset run before Gate-2
+        reason: held-out position R2 is 0.765 while velocity R2 is 0.169; test a minimal causal temporal operator before any larger memory architecture
+      causal_temporal_operator_2026_09_08:
+        status: failed_causal_rescue
+        task: InterceptMedium-VLA-v0
+        episodes_per_condition: 40
+        action_operator_memory_velocity_gain_pp: -32.5
+        action_operator_paired_bootstrap_lower_pp: -50.0
+        memory_operator_velocity_gain_pp: -2.5
+        memory_operator_paired_bootstrap_lower_pp: -20.0
+        memory_operator_oracle_gain_pp: 0.0
+        memory_operator_orthogonal_sham_gain_pp: -2.5
+        criterion_required_gain_pp: 10.0
+        method_training_authorized: false
+        tracked_summary: results/track2_temporal_operator_causal_2026_09_08.json
+        document: docs/results/track2_temporal_operator_causal_2026-09-08.md
     protocol_deviations:
       - original Gate-0 used a held-out tracking task with near-zero base policy success
       - historical Track-2 setup installed a non-memory Transformers fork, so old absolute SRs are not faithful released-mu-VLA benchmark results until replicated
       - historical local adapter omitted the released evaluator action clip to [-1, 1]
       - historical local adapter did not explicitly reproduce the released 224px resize plus 0.9 center crop
       - September 8 ShellGamePush parity manually installed the mutable current YCB archive after ManiSkill b15 rejected it against its historical checksum
-    reason: corrected runtime is credible on InterceptMedium and RememberColor5; Gate-2 remains blocked only on a same-seed ShellGamePush replacement using the exact ManiSkill-b15 YCB archive
-    document: docs/results/track2_ycb_asset_audit_2026-09-08.md
+      - September 8 local evaluator omitted the official evaluator's per-step render call, causing stale GPU actor poses and invalid ShellGamePush physics
+    reason: Predictive-Dynamics Gate-2 supports a Storage-Dynamics Gap, but the minimal causal temporal operator failed to improve control, so no new memory method is authorized
+    document: docs/results/track2_predictive_dynamics_gate2_2026-09-08.md
 
   state_transport:
     gate_passed: false

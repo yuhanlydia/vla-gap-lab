@@ -1,26 +1,25 @@
 # Track 2 Stage 0 parity — 2026-09-08
 
-> **Post-hoc asset audit:** the `ShellGamePush-VLA-v0` run below used a manually
-> extracted current YCB archive (`1551724f...`) after ManiSkill 3.0.0b15 rejected
-> it against its pinned checksum (`174001ba...`). Because ShellGamePush uniquely
-> depends on the YCB `025_mug` asset among these three parity tasks, its 0/20
-> result is now treated as **asset-confounded**, not as a valid released-policy
-> parity failure. See `docs/results/track2_ycb_asset_audit_2026-09-08.md`. The
-> InterceptMedium and RememberColor5 results remain usable. Gate-2 stays blocked
-> until ShellGamePush is rerun on the exact pinned YCB asset.
+> **Root-cause resolution:** the original local evaluator omitted the official
+> evaluator's per-step `env.render()` simulator synchronization. ShellGamePush
+> mugs fell through the table, invalidating both original 0/20 runs. After
+> restoring that behavior, the pinned-asset same-seed NF4 run scored 20/20.
+> Archive inspection also showed byte-identical `025_mug` files, rejecting the
+> YCB mismatch as the causal explanation. See
+> `docs/results/track2_ycb_asset_audit_2026-09-08.md`.
 
-## Decision at run time
+## Final decision
 
-**Parity failed. Stop before Gate-2.** The released K=2 checkpoint passed the
-20-episode tolerance on `InterceptMedium-VLA-v0` and `RememberColor5-VLA-v0`,
-but failed badly on `ShellGamePush-VLA-v0`. The prescribed BF16 rerun of the
-failed task also failed, so the result is not attributable to NF4 quantization
-alone. No 40-episode dynamics collection was started and no method claim is
-authorized from this run.
+**Stage-0 parity passes.** The valid results are ShellGamePush 20/20,
+InterceptMedium 9/20, and RememberColor5 18/20. All are within the frozen
+20-percentage-point tolerance. The 40-episode InterceptMedium Gate-2 collection
+is authorized; no method claim is authorized until that diagnostic completes.
 
 ## Frozen protocol
 
-- repository: `vla-gap-lab` main at `b3ee3461a2ee774cdb767d33645b571119c14771`
+- repository base: `vla-gap-lab` main at `8f6fdd7b71c7ce432279325021f68f643473afcf`
+- evaluator synchronization fix: uncommitted working-tree patch at run time;
+  the tracked compact report records the exact result and artifact hash
 - MIKASA-Robo submodule: `16634db18bef08128ed79346469c86fc12169aed` (`v1.0.0`)
 - checkpoint: official `mu-vla-m64-k2`
 - primary precision: NF4 4-bit
@@ -38,16 +37,15 @@ authorized from this run.
 
 | Task | Observed SR | Reference SR | Absolute error | 20pp parity |
 |---|---:|---:|---:|---|
-| `ShellGamePush-VLA-v0` (NF4) | 0/20 = 0.00 | 0.96 | 96pp | **ASSET-CONFOUNDED** |
+| `ShellGamePush-VLA-v0` (NF4, fixed evaluator) | 20/20 = 1.00 | 0.96 | 4pp | PASS |
 | `InterceptMedium-VLA-v0` (NF4) | 9/20 = 0.45 | 0.55 | 10pp | PASS |
 | `RememberColor5-VLA-v0` (NF4) | 18/20 = 0.90 | 0.94 | 4pp | PASS |
 
-The failed ShellGamePush task completed all 30 steps for every seed without a
-runtime exception. The prescribed BF16 repeat on the same seeds was also
-0/20, with all episodes completing 30 steps. Thus the run does not support
-calling the failure an NF4-only blocker. The later asset audit found that both
-of those ShellGamePush runs shared the same non-pinned YCB asset and therefore
-do not isolate model precision or policy competence.
+The two historical ShellGamePush 0/20 runs remain invalid because their local
+rollout omitted the official per-step render/synchronization side effect. The
+fixed evaluator succeeded on every same-seed NF4 episode, typically in 11–22
+steps. The YCB mismatch was separately eliminated as a cause because every
+`025_mug` file is byte-identical between the two archives.
 
 ## Artifacts
 
@@ -55,13 +53,15 @@ The episode JSONs are intentionally under gitignored `artifacts/`:
 
 - `artifacts/mikasa/parity_ShellGamePush-VLA-v0_k2_4bit_n20.json`
 - `artifacts/mikasa/parity_ShellGamePush-VLA-v0_k2_bf16_n20.json`
+- `artifacts/mikasa/parity_ShellGamePush-VLA-v0_k2_4bit_ycbpinned_n20.json`
 - `artifacts/mikasa/parity_InterceptMedium-VLA-v0_k2_4bit_n20.json`
 - `artifacts/mikasa/parity_RememberColor5-VLA-v0_k2_4bit_n20.json`
 - `artifacts/reports/mu_vla_k2_protocol_parity_4bit_n20.json`
+- `results/track2_stage0_parity_fixed_2026_09_08.json` (tracked compact report)
 
-The original machine-readable analyzer report records `passed: false` because
-of ShellGamePush. Do not reinterpret that report as a clean model-parity test
-until the pinned-asset ShellGamePush replacement result is available.
+The original analyzer report records the invalid pre-fix failure. The pinned
+replacement artifact and `results/gate0_summary.yaml` contain the final
+decision.
 
 ## Environment notes
 
@@ -75,19 +75,15 @@ verification with SHA-256
 installed ManiSkill package expected SHA-256
 `174001ba1003cc0c5adda6453f4433f55ec7e804f0f0da22d015d525d02262fb` and
 rejected the current archive, so the current archive was manually extracted to
-the standard asset path. That workaround is the protocol mismatch identified
-by the later asset audit.
+the standard asset path. This was a provenance mismatch, but the later archive
+comparison showed that it did not alter any `025_mug` file.
 
 `vulkaninfo` and a minimal `ShellGamePush-VLA-v0` GPU reset both succeeded
 after the runtime repair. The formal evaluator still emits SAPIEN's non-fatal
 Vulkan-ICD warning, but all 60 primary episodes and 20 BF16 fallback episodes
 completed and wrote atomic reports.
 
-## Revised next action
+## Next action
 
-Install the exact pinned YCB archive with `scripts/install_track2_ycb_asset.py`
-and rerun only `ShellGamePush-VLA-v0` for the same 20 NF4 seeds. Do not rerun
-InterceptMedium or RememberColor5. If pinned-asset ShellGamePush reaches the
-original Stage-0 tolerance (`SR >= 0.76`), Stage-0 parity is considered restored
-and Gate-2 may start. Otherwise keep Gate-2 blocked and perform a step-by-step
-official-vs-local ShellGamePush evaluator trace.
+This action is complete. See
+`docs/results/track2_predictive_dynamics_gate2_2026-09-08.md`.

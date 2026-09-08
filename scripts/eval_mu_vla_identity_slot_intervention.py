@@ -74,6 +74,7 @@ def main() -> None:
         "checkpoint": str(args.checkpoint),
         "mode": args.mode,
         "start_seed": args.start_seed,
+        "simulator_step_sync": "render_after_step",
     }
     if args.mode in EDITOR_MODES:
         expected.update({"editor": str(args.editor), "edit_seed": args.edit_seed})
@@ -102,6 +103,7 @@ def main() -> None:
 
     from vla_gap_lab.identity_slot_editor import IdentitySlotEditor
     from vla_gap_lab.mu_vla_adapter import MuVLAPolicy
+    from vla_gap_lab.mu_vla_protocol import step_mikasa_env
 
     env = gym.make(
         args.task,
@@ -196,7 +198,7 @@ def main() -> None:
                         episode_edits.append(edit)
                         last_completed_swap = completed
                 action = policy.forward(obs).to(env.unwrapped.device)
-                obs, reward, terminated, truncated, info = env.step(action)
+                obs, reward, terminated, truncated, info = step_mikasa_env(env, action)
                 total_reward += scalar(reward)
                 success = success or bool(scalar(info.get("success", False)))
                 if bool(scalar(terminated)) or bool(scalar(truncated)):

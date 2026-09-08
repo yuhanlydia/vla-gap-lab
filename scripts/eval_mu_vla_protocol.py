@@ -42,7 +42,7 @@ def main() -> None:
 
     from vla_gap_lab.artifact_io import write_json_atomic
     from vla_gap_lab.mikasa_assets import assert_mu_vla_ycb_asset
-    from vla_gap_lab.mu_vla_protocol import ProtocolMatchedMuVLAPolicy
+    from vla_gap_lab.mu_vla_protocol import ProtocolMatchedMuVLAPolicy, step_mikasa_env
 
     expected = {
         "task": args.task,
@@ -51,6 +51,7 @@ def main() -> None:
         "precision": args.precision,
         "preprocess": "official_224_center_crop_0.9",
         "render_mode": "rgb_array",
+        "simulator_step_sync": "render_after_step",
     }
     if args.task in YCB_PARITY_TASKS:
         expected["ycb_asset_provenance"] = assert_mu_vla_ycb_asset(ASSET_DIR)
@@ -120,7 +121,7 @@ def main() -> None:
             total_reward = 0.0
             for step in range(int(env.max_episode_steps)):
                 action = policy.forward(obs).to(env.unwrapped.device)
-                obs, reward, terminated, truncated, info = env.step(action)
+                obs, reward, terminated, truncated, info = step_mikasa_env(env, action)
                 total_reward += scalar(reward)
                 success = success or bool(scalar(info.get("success", False)))
                 if bool(scalar(terminated)) or bool(scalar(truncated)):

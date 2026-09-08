@@ -3,7 +3,7 @@
 Reproducible phenomenon-first experiments for failure hypotheses in existing VLA benchmarks:
 
 1. **Latent-to-Action Utilization Gap** — LIBERO-Plus + OpenVLA-OFT (Gate not passed).
-2. **VLA Memory Structure** — MIKASA-Robo-VLA + mu-VLA. Identity–Location Gate-1 failed; active diagnostic is the **Storage–Dynamics Gap** on an in-distribution predictive task.
+2. **VLA Memory Structure** — MIKASA-Robo-VLA + mu-VLA. Identity–Location Gate-1 failed; Predictive-Dynamics Gate-2 supports a **Storage–Dynamics Gap** on an in-distribution task.
 3. **Cross-Embodiment State Transport** — RoboTwin 2.0 + X-VLA (paused until semantic-phase trajectories are available).
 
 The project deliberately does not introduce a new benchmark. Each track starts with a cheap diagnostic and only trains a minimal mechanism when its preregistered gate passes.
@@ -37,20 +37,19 @@ For mu-VLA:
 - [x] Track 2 Identity–Location IPSI Gate-1 completed and failed
 - [x] Track 2 corrected memory-aware Transformers runtime + action clipping
 - [x] Track 2 Stage-0: InterceptMedium 9/20 (45%) and RememberColor5 18/20 (90%) pass parity tolerance
-- [x] Track 2 Stage-0 ShellGamePush 0/20 isolated to a run with non-pinned YCB asset provenance
-- [ ] Track 2 Stage-0: rerun **only ShellGamePush 20 seeds** with pinned ManiSkill-b15 YCB archive
-- [ ] Track 2 Predictive-Dynamics Gate-2 on `InterceptMedium-VLA-v0` — blocked until the ShellGame replacement parity passes
+- [x] Track 2 ShellGamePush root cause: local rollout omitted the official per-step render/simulator synchronization
+- [x] Track 2 Stage-0 parity restored: ShellGamePush 20/20, InterceptMedium 9/20, RememberColor5 18/20
+- [x] Track 2 Predictive-Dynamics Gate-2: position R² 0.765, velocity R² 0.169 — Storage–Dynamics Gap supported
+- [x] Track 2 minimal causal temporal operator: no control rescue; larger memory training stopped
 - [x] Track 3 X-VLA reset-state diagnostic completed
 - [ ] Track 3 semantic-phase portability probes on real paired RoboTwin trajectories
 
-## Track 2 next run
+## Track 2 result
 
-Do **not** rerun InterceptMedium, RememberColor5, IPSI, or Gate-2 yet.
-
-The September 8 parity run used the current Hugging Face YCB archive after
-ManiSkill 3.0.0b15 rejected it against its historical checksum. ShellGamePush
-is the parity task that directly uses YCB `025_mug`, so the next experiment
-changes only this asset variable.
+Stage-0 parity passes. The same-seed pinned-asset ShellGamePush replacement
+scored 20/20 after matching the official evaluator's per-step render call. The
+old and new archives contain byte-identical `025_mug` files, so YCB provenance
+was a real protocol mismatch but was not the cause of the 0/20 result.
 
 Follow:
 
@@ -59,29 +58,14 @@ docs/results/track2_ycb_asset_audit_2026-09-08.md
 docs/experiments/track2_predictive_dynamics_gate2.md
 ```
 
-Run:
-
-```bash
-git pull origin main
-git submodule update --init --recursive
-
-cd external/MIKASA-Robo
-uv sync --frozen
-uv pip install -r ../../requirements/track2-extra.txt --python .venv/bin/python
-PYTHONPATH=../../src uv run python ../../scripts/check_mu_vla_runtime.py
-PYTHONPATH=../../src uv run python ../../scripts/install_track2_ycb_asset.py
-
-PYTHONPATH=../../src uv run python ../../scripts/eval_mu_vla_protocol.py \
-  --checkpoint ../../models/mu-vla-m64-k2 \
-  --task ShellGamePush-VLA-v0 \
-  --precision 4bit --episodes 20 --start-seed 4242424242 \
-  --output ../../artifacts/mikasa/parity_ShellGamePush-VLA-v0_k2_4bit_ycbpinned_n20.json
-```
-
-Decision:
-
-- ShellGamePush `SR >= 0.76` -> Stage-0 parity restored; proceed to the 40-episode InterceptMedium Gate-2 collection.
-- ShellGamePush `< 0.76` -> keep Gate-2 blocked and compare official vs local ShellGamePush step-by-step.
+Gate-2 completed on 40 InterceptMedium episodes. The policy scored 22/40
+(55%). On leakage-safe held-out episodes, `memory_after` decoded position at
+R² 0.765 but velocity at only R² 0.169; `memory_delta` velocity R² was 0.082.
+This meets the frozen Storage–Dynamics Gap criterion. The next authorized work
+was the minimal causal temporal operator. It failed: memory-injected velocity
+was 18/40 versus 19/40 normal, oracle velocity was also 19/40, and the paired
+bootstrap lower bound was −20 pp. Larger memory training is therefore not
+authorized by this run.
 
 ## Reproducibility
 
@@ -118,5 +102,7 @@ PYTHONPATH=src python3 scripts/capture_run_provenance.py \
 - [Track 2 failed Identity–Location Gate-1](docs/results/track2_identity_location_gate1.md)
 - [Track 2 runtime root-cause audit](docs/results/track2_runtime_root_cause.md)
 - [Track 2 September 8 Stage-0 parity run](docs/results/track2_stage0_parity_2026-09-08.md)
-- [Track 2 YCB asset audit and one-task replacement plan](docs/results/track2_ycb_asset_audit_2026-09-08.md)
+- [Track 2 ShellGamePush root-cause audit](docs/results/track2_ycb_asset_audit_2026-09-08.md)
+- [Track 2 Predictive-Dynamics Gate-2 result](docs/results/track2_predictive_dynamics_gate2_2026-09-08.md)
+- [Track 2 causal temporal operator result](docs/results/track2_temporal_operator_causal_2026-09-08.md)
 - [Track 3 paired reset-state diagnostic](docs/results/track3_paired_reset.md)

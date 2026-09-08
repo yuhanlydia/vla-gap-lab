@@ -109,6 +109,7 @@ def main() -> None:
         "task": args.task,
         "start_seed": args.start_seed,
         "memory_pooling": args.pooling,
+        "simulator_step_sync": "render_after_step",
     }
     episode_summaries = []
     if args.resume and args.output.exists():
@@ -137,6 +138,7 @@ def main() -> None:
     from mikasa_robo_suite.vla.utils.apply_wrappers import apply_mikasa_vla_wrappers
 
     from vla_gap_lab.mu_vla_adapter import MuVLAPolicy
+    from vla_gap_lab.mu_vla_protocol import step_mikasa_env
 
     env = gym.make(
         args.task,
@@ -189,7 +191,7 @@ def main() -> None:
                 rows["target_slot"].append(slot)
                 rows["completed_swaps"].append(completed)
                 action = policy.forward(obs).to(env.unwrapped.device)
-                obs, _, terminated, truncated, info = env.step(action)
+                obs, _, terminated, truncated, info = step_mikasa_env(env, action)
                 success = success or bool(scalar_int(info.get("success", False)))
                 if bool(scalar_int(terminated)) or bool(scalar_int(truncated)):
                     break

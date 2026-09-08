@@ -53,7 +53,7 @@ def main() -> None:
     from mikasa_robo_suite.vla.utils.apply_wrappers import apply_mikasa_vla_wrappers
 
     from vla_gap_lab.dynamics_io import load_episode_npz, save_episode_npz_atomic
-    from vla_gap_lab.mu_vla_protocol import ProtocolMatchedMuVLAPolicy
+    from vla_gap_lab.mu_vla_protocol import ProtocolMatchedMuVLAPolicy, step_mikasa_env
 
     env = gym.make(
         args.task,
@@ -83,7 +83,7 @@ def main() -> None:
             seed = args.start_seed + episode_index
             path = args.output_dir / f"episode_{episode_index:04d}_seed_{seed}.npz"
             expected = {
-                "schema_version": 1,
+                "schema_version": 2,
                 "episode": episode_index,
                 "seed": seed,
                 "task": args.task,
@@ -92,6 +92,7 @@ def main() -> None:
                 "pooling": args.pooling,
                 "preprocess": "official_224_center_crop_0.9",
                 "render_mode": "rgb_array",
+                "simulator_step_sync": "render_after_step",
             }
             if path.exists() and args.resume:
                 _, metadata = load_episode_npz(path)
@@ -135,8 +136,8 @@ def main() -> None:
                 action = policy.forward(obs)
                 rows["memory_after"].append(pool_memory(policy.memory, args.pooling))
                 rows["action"].append(action.cpu().numpy()[0])
-                obs, reward, terminated, truncated, info = env.step(
-                    action.to(base.device)
+                obs, reward, terminated, truncated, info = step_mikasa_env(
+                    env, action.to(base.device)
                 )
                 success = bool(scalar(info.get("success", False)))
                 success_once = success_once or success

@@ -9,6 +9,7 @@ result.
 |---|---|---|---|
 | Latent-to-Action | Three paired Camera views collapse from clean 9/10 to shifted 1/10, 0/10, 0/10 | Their best 480-state representation retentions are 0.608, 0.595, 0.585, all below 0.8 | Do not train ControlSkip; observed failure is representation robustness |
 | Persistence–Revision | At 50 episodes, first-swap identity is 0.651 [0.531, 0.776] while current slot is 0.326 [0.240, 0.429] | Policy is 0/50 and no identity-preserving causal intervention has produced +10 pp SR | Do not train adaptive refresh; representation diagnostic passed, causal Gate did not |
+| Storage–Dynamics | On in-distribution InterceptMedium, committed memory decodes position at R² 0.765 | Velocity R² is 0.169 and memory-update velocity R² is 0.082; the fixed causal memory operator gives −2.5 pp | Gap probe supported, but causal rescue failed; stop before larger memory training |
 | State Transport | A few layer/alpha choices exceed raw fold chance | Correct seed-42 alpha-100 test is nonsignificant; the minimum across 48 exploratory tests has Bonferroni p=1.0 and all margins are negative | Do not distill transport; semantic-phase data are still absent |
 
 ## What is established
@@ -28,12 +29,16 @@ result.
 3. Reset-state X-VLA transport does not robustly exceed its correspondence-null
    distribution. Reset layouts are not semantic task phases, so this diagnostic
    cannot satisfy the formal cross-embodiment hypothesis.
+4. On 40 in-distribution InterceptMedium episodes, the released K=2 policy
+   retained position information in recurrent memory while velocity remained
+   weak under a leakage-safe 24/8/8 whole-episode split. This supports a
+   Storage–Dynamics Gap but is not yet causal evidence for a trainable method.
 
 ## Next experiments, in order
 
-1. For Track 2, design an identity-preserving privileged intervention that
-   changes only the tracked slot estimate. Run it on at least two Tracking tasks
-   with 50 paired seeds. Only a ≥10 pp success gain authorizes method training.
+1. For Track 2, design a minimal causal temporal operator on
+   `InterceptMedium-VLA-v0`, retaining the observed axis asymmetry. Do not
+   train a larger memory architecture before causal confirmation.
 2. For Track 1, sample a different semantic base task and search for a shift
    with representation retention ≥0.8 and control retention <0.7. Do not select
    layers, ridge alpha, or shift severity on the same evaluation episodes.

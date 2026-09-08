@@ -1,6 +1,6 @@
 track: memory_revision
 hypothesis: storage_dynamics_gap
-status: blocked_until_protocol_parity_passes
+status: completed_storage_dynamics_gap_causal_rescue_failed
 
 benchmark:
   task: InterceptMedium-VLA-v0
@@ -56,6 +56,20 @@ decision:
     next_experiment: test_memory_update_readout
   otherwise: stop_without_method
 
+result:
+  collection_episodes: 40
+  collection_successes: 22
+  collection_success_rate: 0.55
+  memory_after_position_r2: 0.764926796354646
+  memory_after_velocity_r2: 0.16932112751043632
+  memory_delta_velocity_r2: 0.082329687264933
+  diagnosis: storage_dynamics_gap
+  tracked_report: results/track2_predictive_dynamics_gate2_2026_09_08.json
+  document: docs/results/track2_predictive_dynamics_gate2_2026-09-08.md
+
 method_authorization:
   train_new_memory_method_before_gate: false
-  allowed_after_storage_dynamics_gap: temporal_operator_only_after_causal_confirmation
+  allowed_after_storage_dynamics_gap: false
+  causal_operator_status: failed
+  causal_operator_document: docs/results/track2_temporal_operator_causal_2026-09-08.md
+  causal_operator_summary: results/track2_temporal_operator_causal_2026_09_08.json

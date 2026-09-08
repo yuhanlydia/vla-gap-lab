@@ -1,7 +1,10 @@
 # Track 2 Gate-2 — Storage–Dynamics Gap
 
 Date frozen: 2026-09-03  
-Stage-0 asset amendment: 2026-09-08
+Stage-0 root-cause resolution: 2026-09-08
+
+Status: completed. See
+`docs/results/track2_predictive_dynamics_gate2_2026-09-08.md`.
 
 ## Why Gate-1 is stopped
 
@@ -45,16 +48,15 @@ Three released training tasks are used as an evaluator sanity gate:
 - `InterceptMedium-VLA-v0` — about 0.55;
 - `RememberColor5-VLA-v0` — about 0.94.
 
-The original 2026-09-08 parity run obtained 0%, 45%, and 90%. The latter two
-passed the frozen 20pp tolerance. ShellGamePush failed in both NF4 and BF16,
-but a post-hoc audit found that both failed runs shared a **non-pinned YCB
-asset**. The machine had manually extracted the current Hugging Face YCB archive
-(`1551724f...`) after ManiSkill 3.0.0b15 rejected it; b15 expects the historical
-archive `174001ba...`.
+The original 2026-09-08 parity run obtained 0%, 45%, and 90%. A post-hoc trace
+found that the local rollout omitted the official evaluator's per-step
+`env.render()` synchronization. Without it, ShellGamePush mugs fell through the
+table. The fixed same-seed NF4 replacement scored 20/20 (100%), so all three
+tasks pass the frozen 20pp tolerance.
 
-Because ShellGamePush uses the YCB `025_mug` asset while the two passing parity
-tasks do not, Stage-0 is now blocked only on a one-variable pinned-asset
-ShellGamePush replacement run. See
+The YCB archive mismatch was real, but all `025_mug` files are byte-identical
+between the two archives, so it was not causal. Exact YCB provenance remains
+pinned for reproducibility. See
 `docs/results/track2_ycb_asset_audit_2026-09-08.md`.
 
 ### Stage 0A — runtime check
@@ -87,10 +89,10 @@ sha256    174001ba1003cc0c5adda6453f4433f55ec7e804f0f0da22d015d525d02262fb
 `eval_mu_vla_protocol.py` now refuses to run ShellGamePush without the matching
 asset provenance marker.
 
-### Stage 0C — rerun only ShellGamePush
+### Stage 0C — completed ShellGamePush replacement
 
-Do not repeat the already-passing InterceptMedium or RememberColor5 runs.
-Keep the checkpoint, precision, seeds, preprocessing and evaluator unchanged:
+The fixed evaluator was run with the same checkpoint, precision, seeds, and
+preprocessing:
 
 ```bash
 cd external/MIKASA-Robo
@@ -104,16 +106,9 @@ PYTHONPATH=../../src uv run python ../../scripts/eval_mu_vla_protocol.py \
 
 ### Stage-0 decision
 
-- If pinned-asset ShellGamePush `SR >= 0.76`, Stage-0 parity passes when combined
-  with the existing InterceptMedium 45% and RememberColor5 90% runs. Proceed to
-  Stage 1.
-- If ShellGamePush remains `< 0.76`, **stop**. Do not run Gate-2. The next task
-  is an official-vs-local step trace on identical ShellGamePush seeds comparing
-  observation images, proprio, action, memory state, curriculum phase and
-  success geometry.
-
-Do not rerun BF16 before this asset-controlled NF4 test; the previous BF16 run
-used the same mismatched asset and therefore did not isolate precision.
+ShellGamePush scored 20/20 (100%), above the required 76%. Combined with
+InterceptMedium 45% and RememberColor5 90%, Stage-0 passes. Proceed to Stage 1.
+The previous BF16 run is obsolete because it used the broken local rollout.
 
 ## Stage 1 — collect in-distribution predictive trajectories
 

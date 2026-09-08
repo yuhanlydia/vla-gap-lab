@@ -1,0 +1,54 @@
+{
+  "track": "memory_revision",
+  "experiment": "minimal_causal_temporal_operator",
+  "date": "2026-09-08",
+  "task": "InterceptMedium-VLA-v0",
+  "checkpoint": "models/mu-vla-m64-k2",
+  "precision": "4bit",
+  "episodes_per_condition": 40,
+  "start_seeds": {
+    "action_operator": 4242724242,
+    "memory_operator": 4242824242
+  },
+  "source_probe_report_sha256": "321090bb07bc57ac0a7703e0d65e282707776c01e94caa1e016431bda78cee07",
+  "simulator_step_sync": "render_after_step",
+  "fit_constraints": {
+    "episode_split": "Gate-2 train only for fit, fixed paired evaluation seeds",
+    "pca_dim": 128,
+    "ridge_alpha_selected_on": "Gate-2 dev episodes",
+    "memory_injection_fraction_of_train_update_norm": 0.25,
+    "velocity_z_clip": 2.0
+  },
+  "action_operator": {
+    "full_artifact_sha256": "a85c45f840f6b8904ce8e8876e9ea02f40d204b8c9dfaa6ff25a9d4fa2af89bb",
+    "conditions": {
+      "normal": {"successes": 21, "episodes": 40, "success_rate": 0.525},
+      "memory_velocity": {"successes": 8, "episodes": 40, "success_rate": 0.2},
+      "oracle_velocity": {"successes": 6, "episodes": 40, "success_rate": 0.15},
+      "sign_sham": {"successes": 9, "episodes": 40, "success_rate": 0.225}
+    },
+    "primary_gain_pp": -32.5,
+    "paired_bootstrap_lower_pp": -50.0,
+    "passes": false
+  },
+  "memory_operator": {
+    "full_artifact_sha256": "ad00d0cffc979fa422a672d6a6ece1f908e10406f0a6b5cff74df3122385c3db",
+    "conditions": {
+      "normal": {"successes": 19, "episodes": 40, "success_rate": 0.475},
+      "memory_velocity": {"successes": 18, "episodes": 40, "success_rate": 0.45},
+      "oracle_velocity": {"successes": 19, "episodes": 40, "success_rate": 0.475},
+      "orthogonal_sham": {"successes": 18, "episodes": 40, "success_rate": 0.45}
+    },
+    "primary_gain_pp": -2.5,
+    "paired_bootstrap_lower_pp": -20.0,
+    "oracle_gain_pp": 0.0,
+    "orthogonal_sham_gain_pp": -2.5,
+    "passes": false
+  },
+  "decision": {
+    "causal_rescue_confirmed": false,
+    "method_training_authorized": false,
+    "status": "stop_after_causal_operator_failure",
+    "reason": "Neither a frozen action correction nor a train-only velocity direction injected into retained memory improved paired task success; the oracle memory injection also had zero gain."
+  }
+}

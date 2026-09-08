@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "episodes_dir": "artifacts/mikasa/intercept_medium_k2_dynamics_n40",
+  "train_episode_ids": [
+    11, 27, 4, 24, 23, 2, 3, 34, 18, 1, 10, 22,
+    20, 26, 28, 30, 37, 38, 17, 0, 21, 35, 9, 6
+  ],
+  "dev_episode_ids": [32, 25, 19, 36, 8, 16, 13, 12],
+  "test_episode_ids": [7, 39, 5, 14, 29, 33, 15, 31],
+  "min_step": 2,
+  "pre_contact_only": true,
+  "features": {
+    "memory_before": {
+      "pca_dim": 128,
+      "explained_variance_ratio_sum": 0.8271084695747373,
+      "targets": {
+        "position_xy": {
+          "alpha": 0.1,
+          "dev_r2_mean": 0.5986430644989014,
+          "test_r2_mean": 0.7706445423765891,
+          "test_r2_per_dim": [0.6385739327637032, 0.9027151519894749],
+          "test_mae": 0.04930418167579523
+        },
+        "velocity_xy": {
+          "alpha": 100.0,
+          "dev_r2_mean": -0.02173498272895813,
+          "test_r2_mean": 0.1651474346925096,
+          "test_r2_per_dim": [-0.008695234006001362, 0.33899010339102054],
+          "test_mae": 0.07508436372430377
+        },
+        "initial_velocity_xy": {
+          "alpha": 100.0,
+          "dev_r2_mean": -0.20330211520195007,
+          "test_r2_mean": -0.2516421625072024,
+          "test_r2_per_dim": [-0.15195731371667076, -0.351327011297734],
+          "test_mae": 0.04285605978381274
+        }
+      }
+    },
+    "memory_after": {
+      "pca_dim": 128,
+      "explained_variance_ratio_sum": 0.8252632086095665,
+      "targets": {
+        "position_xy": {
+          "alpha": 0.1,
+          "dev_r2_mean": 0.600569486618042,
+          "test_r2_mean": 0.764926796354646,
+          "test_r2_per_dim": [0.6228297049623495, 0.9070238877469425],
+          "test_mae": 0.048990513469075736
+        },
+        "velocity_xy": {
+          "alpha": 100.0,
+          "dev_r2_mean": -0.02099919319152832,
+          "test_r2_mean": 0.16932112751043632,
+          "test_r2_per_dim": [-0.010947673854339257, 0.3495899288752119],
+          "test_mae": 0.0751529204749988
+        },
+        "initial_velocity_xy": {
+          "alpha": 100.0,
+          "dev_r2_mean": -0.19640320539474487,
+          "test_r2_mean": -0.2468010754299741,
+          "test_r2_per_dim": [-0.1496162003343442, -0.343985950525604],
+          "test_mae": 0.042691087081289755
+        }
+      }
+    },
+    "memory_delta": {
+      "pca_dim": 128,
+      "explained_variance_ratio_sum": 0.5601804105700328,
+      "targets": {
+        "position_xy": {
+          "alpha": 0.1,
+          "dev_r2_mean": 0.13089343905448914,
+          "test_r2_mean": 0.2815545970976916,
+          "test_r2_per_dim": [0.05641773108167425, 0.5066914631137089],
+          "test_mae": 0.1074297108746358
+        },
+        "velocity_xy": {
+          "alpha": 100.0,
+          "dev_r2_mean": -0.041348159313201904,
+          "test_r2_mean": 0.082329687264933,
+          "test_r2_per_dim": [-0.00048746145292355436, 0.16514683598278956],
+          "test_mae": 0.09624039033023392
+        },
+        "initial_velocity_xy": {
+          "alpha": 0.1,
+          "dev_r2_mean": -0.28620803356170654,
+          "test_r2_mean": -0.13094914623963272,
+          "test_r2_per_dim": [-0.12175982092926207, -0.14013847155000336],
+          "test_mae": 0.048516995501343224
+        }
+      }
+    }
+  },
+  "gate": {
+    "position_r2_after": 0.764926796354646,
+    "velocity_r2_after": 0.16932112751043632,
+    "velocity_r2_delta": 0.082329687264933,
+    "diagnosis": "storage_dynamics_gap"
+  }
+}

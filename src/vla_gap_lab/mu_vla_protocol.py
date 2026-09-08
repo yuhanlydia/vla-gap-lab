@@ -22,7 +22,7 @@ MU_VLA_TRANSFORMERS_COMMIT = "9dbc09f574912a45dd0d71354c035e3c37bcce9e"
 
 def _normalize_vcs_url(url: str | None) -> str:
     value = (url or "").strip().lower().rstrip("/")
-    return value[:-4] if value.endswith(".git") else value
+    return value.removesuffix(".git")
 
 
 def transformers_runtime_provenance() -> dict[str, str | None]:
@@ -109,6 +109,13 @@ def clip_mikasa_action(action: np.ndarray | torch.Tensor) -> np.ndarray | torch.
     return np.clip(np.asarray(action), -1.0, 1.0)
 
 
+def step_mikasa_env(env: Any, action: Any) -> tuple[Any, ...]:
+    """Step MIKASA and flush GPU actor pose updates like the official evaluator."""
+    transition = env.step(action)
+    env.render()
+    return transition
+
+
 def prepare_training_matched_image(
     image: np.ndarray, *, center_crop: bool = True
 ) -> Image.Image:
@@ -189,5 +196,10 @@ class ProtocolMatchedMuVLAPolicy(MuVLAPolicy):
         return inputs[0], normalize_bounds_q99(proprio, self.stats["proprio"])
 
     @torch.inference_mode()
-    def forward(self, obs: dict[str, Any]) -> torch.Tensor:
-        return clip_mikasa_action(super().forward(obs))
+    def forward(
+        self,
+        obs: dict[str, Any],
+        *,
+        memory_override: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        return clip_mikasa_action(super().forward(obs, memory_override=memory_override))

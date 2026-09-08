@@ -227,10 +227,15 @@ class MuVLAPolicy:
         return inputs[0], normalize_bounds_q99(proprio, self.stats["proprio"])
 
     @torch.inference_mode()
-    def forward(self, obs: dict[str, Any]) -> torch.Tensor:
+    def forward(
+        self,
+        obs: dict[str, Any],
+        *,
+        memory_override: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         inputs, proprio = self._inputs(obs)
         previous = self.memory
-        input_memory = previous
+        input_memory = previous if memory_override is None else memory_override
         if self.mode in {"reset_refresh", "oracle_refresh"} and self.step == self.revision_step:
             input_memory = self.initial_memory
         actions, _, candidate = self.model.predict_action(

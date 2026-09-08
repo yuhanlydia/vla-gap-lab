@@ -22,6 +22,8 @@ SCRIPTS = [
     "analyze_mu_vla_train_parity.py",
     "collect_mu_vla_dynamics_trajectory.py",
     "probe_mu_vla_predictive_dynamics.py",
+    "eval_mu_vla_temporal_operator.py",
+    "eval_mu_vla_memory_temporal_operator.py",
     "install_track2_ycb_asset.py",
     "extract_xvla_robotwin_hidden.py",
     "model_preflight.py",

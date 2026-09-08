@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "repository_base_commit": "8f6fdd7b71c7ce432279325021f68f643473afcf",
+  "repository_worktree_state": "uncommitted evaluator synchronization fix",
+  "task": "ShellGamePush-VLA-v0",
+  "checkpoint": "../../models/mu-vla-m64-k2",
+  "precision": "4bit",
+  "preprocess": "official_224_center_crop_0.9",
+  "render_mode": "rgb_array",
+  "simulator_step_sync": "render_after_step",
+  "start_seed": 4242424242,
+  "episodes": 20,
+  "successes": 20,
+  "success_rate": 1.0,
+  "parity_threshold": 0.76,
+  "parity_passed": true,
+  "episode_results": [
+    {"seed": 4242424242, "success": true, "steps": 15},
+    {"seed": 4242424243, "success": true, "steps": 17},
+    {"seed": 4242424244, "success": true, "steps": 16},
+    {"seed": 4242424245, "success": true, "steps": 17},
+    {"seed": 4242424246, "success": true, "steps": 22},
+    {"seed": 4242424247, "success": true, "steps": 17},
+    {"seed": 4242424248, "success": true, "steps": 20},
+    {"seed": 4242424249, "success": true, "steps": 15},
+    {"seed": 4242424250, "success": true, "steps": 17},
+    {"seed": 4242424251, "success": true, "steps": 16},
+    {"seed": 4242424252, "success": true, "steps": 12},
+    {"seed": 4242424253, "success": true, "steps": 12},
+    {"seed": 4242424254, "success": true, "steps": 15},
+    {"seed": 4242424255, "success": true, "steps": 17},
+    {"seed": 4242424256, "success": true, "steps": 15},
+    {"seed": 4242424257, "success": true, "steps": 11},
+    {"seed": 4242424258, "success": true, "steps": 12},
+    {"seed": 4242424259, "success": true, "steps": 17},
+    {"seed": 4242424260, "success": true, "steps": 14},
+    {"seed": 4242424261, "success": true, "steps": 15}
+  ],
+  "runtime_provenance": {
+    "transformers_version": "4.40.1",
+    "tokenizers_version": "0.19.1",
+    "transformers_url": "https://github.com/CognitiveAISystems/transformers-mu-openvla-oft.git",
+    "transformers_commit": "9dbc09f574912a45dd0d71354c035e3c37bcce9e"
+  },
+  "ycb_asset_provenance": {
+    "repo_id": "haosulab/ManiSkill2",
+    "revision": "4c134e2e33b11b1fa751c1d7b6afb2e89231b875",
+    "filename": "data/mani_skill2_ycb.zip",
+    "archive_sha256": "174001ba1003cc0c5adda6453f4433f55ec7e804f0f0da22d015d525d02262fb"
+  },
+  "full_artifact": {
+    "path": "artifacts/mikasa/parity_ShellGamePush-VLA-v0_k2_4bit_ycbpinned_n20.json",
+    "sha256": "a70d2a9577854bdac70f99d11bc93fe1a0042ebf160164bd1271e8d22e1354b4"
+  }
+}

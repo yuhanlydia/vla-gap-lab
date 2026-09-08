@@ -2,6 +2,11 @@
 
 Date: 2026-09-03
 
+> **Resolved 2026-09-08:** the frozen in-distribution diagnostic completed.
+> Position was decodable from committed memory at R² 0.765, while velocity was
+> only R² 0.169. Gate-2 therefore supports the Storage–Dynamics Gap. See
+> `docs/results/track2_predictive_dynamics_gate2_2026-09-08.md`.
+
 ## Latest evidence
 
 The completed horizon and causal experiments do not support continuing the
