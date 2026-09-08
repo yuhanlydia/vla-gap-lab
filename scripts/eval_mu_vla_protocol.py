@@ -9,6 +9,8 @@ from pathlib import Path
 
 import numpy as np
 
+YCB_PARITY_TASKS = {"ShellGamePush-VLA-v0"}
+
 
 def scalar(value) -> float:
     if hasattr(value, "detach"):
@@ -33,6 +35,15 @@ def main() -> None:
             "episode seeds must be in NumPy RandomState range [0, 2**32 - 1]"
         )
 
+    import gymnasium as gym
+    import mikasa_robo_suite.vla.memory_envs  # noqa: F401
+    from mani_skill import ASSET_DIR
+    from mikasa_robo_suite.vla.utils.apply_wrappers import apply_mikasa_vla_wrappers
+
+    from vla_gap_lab.artifact_io import write_json_atomic
+    from vla_gap_lab.mikasa_assets import assert_mu_vla_ycb_asset
+    from vla_gap_lab.mu_vla_protocol import ProtocolMatchedMuVLAPolicy
+
     expected = {
         "task": args.task,
         "checkpoint": str(args.checkpoint),
@@ -41,6 +52,9 @@ def main() -> None:
         "preprocess": "official_224_center_crop_0.9",
         "render_mode": "rgb_array",
     }
+    if args.task in YCB_PARITY_TASKS:
+        expected["ycb_asset_provenance"] = assert_mu_vla_ycb_asset(ASSET_DIR)
+
     episodes = []
     if args.resume and args.output.exists():
         previous = json.loads(args.output.read_text())
@@ -58,13 +72,6 @@ def main() -> None:
             )
         )
         return
-
-    import gymnasium as gym
-    import mikasa_robo_suite.vla.memory_envs  # noqa: F401
-    from mikasa_robo_suite.vla.utils.apply_wrappers import apply_mikasa_vla_wrappers
-
-    from vla_gap_lab.artifact_io import write_json_atomic
-    from vla_gap_lab.mu_vla_protocol import ProtocolMatchedMuVLAPolicy
 
     env = gym.make(
         args.task,
@@ -86,7 +93,7 @@ def main() -> None:
 
     def checkpoint() -> dict:
         report = {
-            "schema_version": 2,
+            "schema_version": 3,
             **expected,
             "runtime_provenance": policy.runtime_provenance,
             "episodes": episodes,
