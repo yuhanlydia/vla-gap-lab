@@ -22,6 +22,7 @@ SCRIPTS = [
     "analyze_mu_vla_train_parity.py",
     "collect_mu_vla_dynamics_trajectory.py",
     "probe_mu_vla_predictive_dynamics.py",
+    "install_track2_ycb_asset.py",
     "extract_xvla_robotwin_hidden.py",
     "model_preflight.py",
     "smoke_mu_vla_mikasa.py",
