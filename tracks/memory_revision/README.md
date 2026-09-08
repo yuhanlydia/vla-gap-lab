@@ -1,64 +1,50 @@
 # Track 2 — Memory Structure in VLA Control
 
-The original Persistence–Revision / Identity–Location line has completed its
-causal test and is **stopped**. On `ShellGameShuffleTouch-VLA-v0`, the released
-mu-VLA policy appeared at the floor (K=2: 0/30, K=8: 1/30). IPSI corrected the
-slot probe strongly but changed closed-loop success only from 0% to 2% on 50
-paired seeds. The preregistered Gate-1 therefore failed; do not train
-Dual-Timescale Memory from that result.
-
-However, a later runtime audit found that the historical Track-2 setup
-instructions installed the non-memory `moojink/transformers-openvla-oft` fork
-instead of the exact memory-aware mu-VLA Transformers fork. Those absolute
-scores are therefore **protocol-compromised until replicated**. The qualitative
-negative result remains useful for deciding what to retest, but it is not a
-faithful released-mu-VLA benchmark claim.
-
-See
-[`docs/results/track2_runtime_root_cause.md`](../../docs/results/track2_runtime_root_cause.md)
-for the root-cause audit.
-
-The earlier ShuffleTouch setup also has a task/model mismatch: ShuffleTouch is
-not one of the five tasks used to train the released MIKASA mu-VLA checkpoint
-and requires a different tracking-style memory structure. It is not a clean
-test bed for a small causal memory edit even after the runtime is corrected.
+The original Persistence–Revision / Identity–Location line is stopped. Historical absolute
+Track-2 scores before the runtime repair are protocol-compromised because the old setup
+used a non-memory Transformers fork. See
+[`docs/results/track2_runtime_root_cause.md`](../../docs/results/track2_runtime_root_cause.md).
 
 ## Active question: Storage–Dynamics Gap
 
-The next phenomenon is deliberately moved **in distribution**. The released
-K=2 checkpoint strongly benefits persistent/static memory tasks but shows only
-a small released gain over no-memory on `InterceptMedium-VLA-v0`, one of its
-five training tasks. Intercept requires predictive motion information rather
-than cue storage.
-
-The diagnostic asks:
+The active phenomenon is deliberately **in distribution** on the released K=2 checkpoint:
 
 ```text
 Does recurrent memory encode current physical state
 without encoding the temporal dynamics needed for predictive control?
 ```
 
-Before testing this, the local evaluator must pass a train-task protocol parity
-check. New runs use `ProtocolMatchedMuVLAPolicy`, which:
+No new memory method is authorized until released-checkpoint parity passes and the
+`InterceptMedium-VLA-v0` representation diagnostic establishes which failure branch is real.
 
-- requires the exact official memory-aware Transformers VCS revision;
-- checks `transformers==4.40.1` and `tokenizers==0.19.1`;
-- reproduces the released 224px resize plus 0.9 center crop;
-- clips actions to `[-1, 1]` before the simulator step.
+## Current parity status — 2026-09-08
 
-Execution is frozen in
+The corrected memory-aware runtime produced:
+
+- `InterceptMedium-VLA-v0`: 9/20 = 45% vs released ~55% — PASS;
+- `RememberColor5-VLA-v0`: 18/20 = 90% vs released ~94% — PASS;
+- `ShellGamePush-VLA-v0`: 0/20 in NF4 and 0/20 in BF16 — **asset-confounded**.
+
+The ShellGame machine manually extracted the current Hugging Face YCB archive after
+ManiSkill 3.0.0b15 rejected it against its historical checksum. ShellGamePush directly uses
+YCB `025_mug`; the two passing parity tasks do not. Track 2 now pins the exact historical
+archive expected by ManiSkill b15 and refuses ShellGame evaluation without provenance.
+
+See
+[`docs/results/track2_ycb_asset_audit_2026-09-08.md`](../../docs/results/track2_ycb_asset_audit_2026-09-08.md).
+
+## Next run — one task only
+
+1. `git pull` and reinstall Track-2 requirements if needed;
+2. run `scripts/check_mu_vla_runtime.py`;
+3. run `scripts/install_track2_ycb_asset.py`;
+4. rerun only `ShellGamePush-VLA-v0`, K2, NF4, the same 20 seeds;
+5. if `SR >= 0.76`, Stage-0 parity is restored and the 40-episode
+   `InterceptMedium-VLA-v0` dynamics collection may start;
+6. if `<0.76`, keep Gate-2 blocked and compare official-vs-local ShellGame rollout state
+   step-by-step before changing any scientific hypothesis.
+
+Full commands and the later Storage–Dynamics decision tree are frozen in
 [`docs/experiments/track2_predictive_dynamics_gate2.md`](../../docs/experiments/track2_predictive_dynamics_gate2.md).
 
-Order:
-
-1. reinstall Track-2 requirements and run `scripts/check_mu_vla_runtime.py`;
-2. 16GB 4-bit parity on `ShellGamePush`, `InterceptMedium`, and
-   `RememberColor5`;
-3. only if parity passes, collect 40 `InterceptMedium` recurrent trajectories;
-4. probe position, velocity, and initial velocity from memory-before,
-   memory-after, and memory-delta using episode-held-out splits;
-5. choose the next causal experiment from the diagnostic branch; do not train a
-   new memory architecture before that branch is established.
-
-Historical IPSI and `ConflictAdaptiveRefresh` code remains only for
-reproducibility.
+Historical IPSI and `ConflictAdaptiveRefresh` code remains only for reproducibility.
