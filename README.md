@@ -4,7 +4,7 @@ Reproducible phenomenon-first experiments for failure hypotheses in existing VLA
 
 1. **Latent-to-Action Utilization Gap** — LIBERO-Plus + OpenVLA-OFT (Gate not passed).
 2. **VLA Memory Structure** — MIKASA-Robo-VLA + mu-VLA. Identity–Location Gate-1 failed; Predictive-Dynamics Gate-2 supports a **Storage–Dynamics Gap** on an in-distribution task.
-3. **Cross-Embodiment State Transport** — RoboTwin 2.0 + X-VLA (paused until semantic-phase trajectories are available).
+3. **Cross-Embodiment State Transport** — RoboTwin 2.0 + X-VLA (exploratory scene-matched proxy completed; formal gate remains closed pending semantic-phase trajectories).
 
 The project deliberately does not introduce a new benchmark. Each track starts with a cheap diagnostic and only trains a minimal mechanism when its preregistered gate passes.
 
@@ -42,6 +42,7 @@ For mu-VLA:
 - [x] Track 2 Predictive-Dynamics Gate-2: position R² 0.765, velocity R² 0.169 — Storage–Dynamics Gap supported
 - [x] Track 2 minimal causal temporal operator: no control rescue; larger memory training stopped
 - [x] Track 3 X-VLA reset-state diagnostic completed
+- [x] Track 3 scene-matched normalized-progress phase-proxy diagnostic completed (exploratory; formal Gate-0 closed)
 - [ ] Track 3 semantic-phase portability probes on real paired RoboTwin trajectories
 
 ## Track 2 result
@@ -106,3 +107,4 @@ PYTHONPATH=src python3 scripts/capture_run_provenance.py \
 - [Track 2 Predictive-Dynamics Gate-2 result](docs/results/track2_predictive_dynamics_gate2_2026-09-08.md)
 - [Track 2 causal temporal operator result](docs/results/track2_temporal_operator_causal_2026-09-08.md)
 - [Track 3 paired reset-state diagnostic](docs/results/track3_paired_reset.md)
+- [Track 3 scene-matched phase-proxy diagnostic](docs/results/track3_scene_matched_phase_proxy_2026-09-09.md)

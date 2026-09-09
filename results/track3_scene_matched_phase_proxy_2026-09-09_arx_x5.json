@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "task": "blocks_ranking_rgb",
+  "source": "aloha_agilex",
+  "target": "arx_x5",
+  "analysis_status": "exploratory_scene_matched_phase_proxy_only",
+  "phase_labels": "six sampled normalized-progress ordinals; not semantic task-phase ground truth",
+  "folds": 4,
+  "seed": 42,
+  "classifier": "RidgeClassifier alpha=100, source-trained phase prediction; held-out episode folds",
+  "results": [
+    {
+      "stack": "vlm",
+      "layer": 0,
+      "cross_phase_accuracy": 0.9666666666666666,
+      "embodiment_accuracy": 0.9812500000000001,
+      "fold_phase_scores": [
+        0.95,
+        1.0,
+        0.9666666666666667,
+        0.95
+      ],
+      "fold_embodiment_scores": [
+        0.9916666666666667,
+        0.95,
+        0.9916666666666667,
+        0.9916666666666667
+      ]
+    },
+    {
+      "stack": "vlm",
+      "layer": 3,
+      "cross_phase_accuracy": 0.9624999999999999,
+      "embodiment_accuracy": 0.98125,
+      "fold_phase_scores": [
+        0.95,
+        1.0,
+        0.9666666666666667,
+        0.9333333333333333
+      ],
+      "fold_embodiment_scores": [
+        0.9833333333333333,
+        0.9666666666666667,
+        0.9916666666666667,
+        0.9833333333333333
+      ]
+    },
+    {
+      "stack": "vlm",
+      "layer": 6,
+      "cross_phase_accuracy": 0.9541666666666666,
+      "embodiment_accuracy": 0.9541666666666667,
+      "fold_phase_scores": [
+        0.95,
+        0.95,
+        0.9666666666666667,
+        0.95
+      ],
+      "fold_embodiment_scores": [
+        0.9666666666666667,
+        0.925,
+        0.95,
+        0.975
+      ]
+    },
+    {
+      "stack": "vlm",
+      "layer": 9,
+      "cross_phase_accuracy": 0.9458333333333332,
+      "embodiment_accuracy": 0.96875,
+      "fold_phase_scores": [
+        0.95,
+        0.9666666666666667,
+        0.95,
+        0.9166666666666666
+      ],
+      "fold_embodiment_scores": [
+        0.9666666666666667,
+        0.975,
+        0.9583333333333334,
+        0.975
+      ]
+    },
+    {
+      "stack": "vlm",
+      "layer": 11,
+      "cross_phase_accuracy": 0.9374999999999999,
+      "embodiment_accuracy": 0.9500000000000001,
+      "fold_phase_scores": [
+        0.9166666666666666,
+        0.9833333333333333,
+        0.9333333333333333,
+        0.9166666666666666
+      ],
+      "fold_embodiment_scores": [
+        0.9416666666666667,
+        0.925,
+        0.9583333333333334,
+        0.975
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 0,
+      "cross_phase_accuracy": 0.7666666666666666,
+      "embodiment_accuracy": 0.9979166666666667,
+      "fold_phase_scores": [
+        0.7833333333333333,
+        0.8166666666666667,
+        0.65,
+        0.8166666666666667
+      ],
+      "fold_embodiment_scores": [
+        1.0,
+        1.0,
+        0.9916666666666667,
+        1.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 4,
+      "cross_phase_accuracy": 0.7999999999999999,
+      "embodiment_accuracy": 1.0,
+      "fold_phase_scores": [
+        0.7333333333333333,
+        0.8333333333333334,
+        0.75,
+        0.8833333333333333
+      ],
+      "fold_embodiment_scores": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 8,
+      "cross_phase_accuracy": 0.8166666666666667,
+      "embodiment_accuracy": 1.0,
+      "fold_phase_scores": [
+        0.75,
+        0.8666666666666667,
+        0.7666666666666667,
+        0.8833333333333333
+      ],
+      "fold_embodiment_scores": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 12,
+      "cross_phase_accuracy": 0.8083333333333333,
+      "embodiment_accuracy": 1.0,
+      "fold_phase_scores": [
+        0.75,
+        0.8666666666666667,
+        0.75,
+        0.8666666666666667
+      ],
+      "fold_embodiment_scores": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 16,
+      "cross_phase_accuracy": 0.8083333333333333,
+      "embodiment_accuracy": 1.0,
+      "fold_phase_scores": [
+        0.7833333333333333,
+        0.85,
+        0.7166666666666667,
+        0.8833333333333333
+      ],
+      "fold_embodiment_scores": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 20,
+      "cross_phase_accuracy": 0.8166666666666667,
+      "embodiment_accuracy": 1.0,
+      "fold_phase_scores": [
+        0.7833333333333333,
+        0.85,
+        0.75,
+        0.8833333333333333
+      ],
+      "fold_embodiment_scores": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 23,
+      "cross_phase_accuracy": 0.8041666666666667,
+      "embodiment_accuracy": 1.0,
+      "fold_phase_scores": [
+        0.7666666666666667,
+        0.8333333333333334,
+        0.75,
+        0.8666666666666667
+      ],
+      "fold_embodiment_scores": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  ],
+  "gate_by_stack": {
+    "vlm": {
+      "passed": false,
+      "eligible_layer_indices": [],
+      "phase_threshold": 0.8,
+      "separation_margin": 0.1,
+      "late_embodiment_accuracy": 0.9500000000000001
+    },
+    "control": {
+      "passed": false,
+      "eligible_layer_indices": [],
+      "phase_threshold": 0.8,
+      "separation_margin": 0.1,
+      "late_embodiment_accuracy": 1.0
+    }
+  },
+  "gate_passed": false
+}

@@ -1,0 +1,55 @@
+diff --git a/scripts/download_xpolicylab_data.sh b/scripts/download_xpolicylab_data.sh
+index a90aed9..2559863 100755
+--- a/scripts/download_xpolicylab_data.sh
++++ b/scripts/download_xpolicylab_data.sh
+@@ -148 +148,20 @@ if not task_config or task_config in {".", ".."} or any(
+-embodiment = "aloha_agilex"
++def infer_embodiment(archive_name: str) -> str:
++    """Infer the native RoboTwin embodiment from the archive naming contract."""
++    stem = Path(archive_name).stem.lower()
++    if stem == "demo_clean" or stem.startswith("aloha-agilex_"):
++        return "aloha_agilex"
++    if stem.startswith("franka_"):
++        return "franka"
++    if stem.startswith("arx-x5_"):
++        return "arx_x5"
++    if stem.startswith("piper_"):
++        return "piper"
++    if stem.startswith("ur5_"):
++        return "ur5"
++    raise ValueError(
++        f"cannot infer RoboTwin embodiment from archive name {archive_name!r}; "
++        "pass an archive with a supported embodiment prefix"
++    )
++
++
++embodiment = infer_embodiment(archive_name)
+@@ -245,8 +263,0 @@ def locate_payload(extract_root: Path, task: str) -> Path:
+-    if not candidates:
+-        expected = (
+-            f"<task>/{embodiment}, {task_config}/<task>/{embodiment}, or an "
+-            "equivalent nested layout"
+-        )
+-        raise ValueError(
+-            f"archive does not contain a {task!r} payload with data/; expected {expected}"
+-        )
+@@ -256 +267,18 @@ def locate_payload(extract_root: Path, task: str) -> Path:
+-    return candidates[0]
++    if candidates:
++        return candidates[0]
++
++    # Clean target-embodiment archives are also published as
++    # <embodiment>_clean_50/{data,instructions,...}, without task and
++    # embodiment directory components. The task is supplied by the archive
++    # path, while the embodiment is inferred above.
++    archive_root = extract_root / task_config
++    if (archive_root / "data").is_dir():
++        return archive_root
++
++    expected = (
++        f"<task>/{embodiment}, {task_config}/<task>/{embodiment}, or "
++        f"{task_config}/"
++    )
++    raise ValueError(
++        f"archive does not contain a {task!r} payload with data/; expected {expected}"
++    )

@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "analysis_status": "exploratory_negative_control",
+  "source": "aloha_agilex",
+  "target": "franka",
+  "seed": 123,
+  "classifier": "RidgeClassifier alpha=100",
+  "phase_labels": "six normalized-progress ordinals; source labels globally shuffled",
+  "results": [
+    {
+      "stack": "vlm",
+      "layer": 0,
+      "shuffled_source_phase_accuracy": 0.19999999999999998,
+      "fold_scores": [
+        0.3,
+        0.3,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "stack": "vlm",
+      "layer": 3,
+      "shuffled_source_phase_accuracy": 0.075,
+      "fold_scores": [
+        0.3,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "stack": "vlm",
+      "layer": 6,
+      "shuffled_source_phase_accuracy": 0.125,
+      "fold_scores": [
+        0.0,
+        0.2,
+        0.1,
+        0.2
+      ]
+    },
+    {
+      "stack": "vlm",
+      "layer": 9,
+      "shuffled_source_phase_accuracy": 0.075,
+      "fold_scores": [
+        0.0,
+        0.3,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "stack": "vlm",
+      "layer": 11,
+      "shuffled_source_phase_accuracy": 0.1,
+      "fold_scores": [
+        0.2,
+        0.2,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 0,
+      "shuffled_source_phase_accuracy": 0.05,
+      "fold_scores": [
+        0.1,
+        0.1,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 4,
+      "shuffled_source_phase_accuracy": 0.15,
+      "fold_scores": [
+        0.3,
+        0.2,
+        0.1,
+        0.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 8,
+      "shuffled_source_phase_accuracy": 0.125,
+      "fold_scores": [
+        0.3,
+        0.2,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 12,
+      "shuffled_source_phase_accuracy": 0.15,
+      "fold_scores": [
+        0.3,
+        0.2,
+        0.1,
+        0.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 16,
+      "shuffled_source_phase_accuracy": 0.15,
+      "fold_scores": [
+        0.3,
+        0.2,
+        0.1,
+        0.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 20,
+      "shuffled_source_phase_accuracy": 0.22499999999999998,
+      "fold_scores": [
+        0.3,
+        0.3,
+        0.3,
+        0.0
+      ]
+    },
+    {
+      "stack": "control",
+      "layer": 23,
+      "shuffled_source_phase_accuracy": 0.225,
+      "fold_scores": [
+        0.3,
+        0.2,
+        0.4,
+        0.0
+      ]
+    }
+  ]
+}
