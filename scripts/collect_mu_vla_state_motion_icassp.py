@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Collect full recurrent μVLA memory for the ICASSP state-motion study."""
+"""Collect full recurrent memory plus same-backbone visual tokens for ICASSP."""
 
 from __future__ import annotations
 
@@ -53,6 +53,7 @@ def main() -> None:
 
     from vla_gap_lab.dynamics_io import load_episode_npz, save_episode_npz_atomic
     from vla_gap_lab.mu_vla_protocol import ProtocolMatchedMuVLAPolicy, step_mikasa_env
+    from vla_gap_lab.state_motion import pool_projector_tokens
 
     env = gym.make(
         args.task,
@@ -77,13 +78,21 @@ def main() -> None:
     )
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
+    captured: dict[str, object] = {}
+
+    def projector_hook(_module, _inputs, output):
+        value = output[0] if isinstance(output, (tuple, list)) else output
+        captured["projector"] = value.detach()
+
+    hook_handle = policy.model.projector.register_forward_hook(projector_hook)
+
     try:
         for episode_index in range(args.episodes):
             seed = args.start_seed + episode_index
             path = args.output_dir / f"episode_{episode_index:04d}_seed_{seed}.npz"
             expected = {
-                "schema_version": 1,
-                "study": "icassp_state_motion",
+                "schema_version": 2,
+                "study": "icassp_motion_compression",
                 "episode": episode_index,
                 "seed": seed,
                 "task": args.task,
@@ -91,6 +100,9 @@ def main() -> None:
                 "precision": args.precision,
                 "memory_tokens": 64,
                 "memory_state": "after_policy_update",
+                "visual_source": "same_mu_vla_projector_current_step",
+                "visual_pool_grid": 2,
+                "visual_tokens": 8,
                 "preprocess": "official_224_center_crop_0.9",
                 "render_mode": "rgb_array",
                 "simulator_step_sync": "render_after_step",
@@ -107,9 +119,9 @@ def main() -> None:
             obs, _ = env.reset(seed=seed)
             policy.reset()
             rows = {key: [] for key in (
-                "memory_after", "step", "ball_position_xy", "ball_velocity_xy",
-                "goal_position_xy", "tcp_position_xy", "reached_status",
-                "action", "reward", "success",
+                "memory_after", "visual_tokens", "step", "ball_position_xy",
+                "ball_velocity_xy", "goal_position_xy", "tcp_position_xy",
+                "reached_status", "action", "reward", "success",
             )}
             success_once = False
             for step in range(int(env.max_episode_steps)):
@@ -120,7 +132,14 @@ def main() -> None:
                 rows["tcp_position_xy"].append(vec2(base.agent.tcp.pose.p))
                 rows["reached_status"].append(scalar(base.reached_status))
 
+                captured.clear()
                 action = policy.forward(obs)
+                if "projector" not in captured:
+                    raise RuntimeError("mu-VLA projector hook did not fire during policy.forward")
+                visual = pool_projector_tokens(captured["projector"], num_views=2, grid=2)
+                rows["visual_tokens"].append(
+                    visual.float().cpu().numpy().astype(np.float16, copy=False)
+                )
                 rows["memory_after"].append(full_memory(policy.memory))
                 rows["action"].append(action.detach().cpu().numpy()[0])
                 obs, reward, terminated, truncated, info = step_mikasa_env(
@@ -135,6 +154,7 @@ def main() -> None:
 
             arrays = {
                 "memory_after": np.asarray(rows["memory_after"], dtype=np.float16),
+                "visual_tokens": np.asarray(rows["visual_tokens"], dtype=np.float16),
                 "step": np.asarray(rows["step"], dtype=np.int32),
                 "ball_position_xy": np.asarray(rows["ball_position_xy"], dtype=np.float32),
                 "ball_velocity_xy": np.asarray(rows["ball_velocity_xy"], dtype=np.float32),
@@ -158,6 +178,7 @@ def main() -> None:
                 "output": str(path),
             }))
     finally:
+        hook_handle.remove()
         env.close()
 
 
