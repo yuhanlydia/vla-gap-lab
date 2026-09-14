@@ -1,4 +1,4 @@
-"""Helpers for the ICASSP state-motion accessibility study."""
+"""Helpers for the ICASSP motion-preservation study."""
 
 from __future__ import annotations
 
@@ -24,6 +24,64 @@ def select_memory_tokens(memory: np.ndarray, mode: str) -> np.ndarray:
     else:
         raise ValueError("mode must be 'full64' or 'stride8'")
     return selected.astype(np.float32, copy=False).reshape(selected.shape[0], -1)
+
+
+def pool_projector_tokens(projected, *, num_views: int = 2, grid: int = 2):
+    """Coarsely pool same-backbone visual projector patches without extra learning."""
+    import math
+    import torch
+
+    if not torch.is_tensor(projected) or projected.ndim != 3 or projected.shape[0] != 1:
+        raise ValueError("projected features must have shape [1,patches,dim]")
+    if num_views < 1 or grid < 1:
+        raise ValueError("num_views and grid must be positive")
+    total = int(projected.shape[1])
+    if total % num_views:
+        raise ValueError("patch count must be divisible by num_views")
+    per_view = total // num_views
+    side = int(math.isqrt(per_view))
+    if side * side != per_view or side % grid:
+        raise ValueError("patches per view must form a square grid divisible by pooling grid")
+    hidden = int(projected.shape[2])
+    block = side // grid
+    values = projected[0].reshape(num_views, side, side, hidden)
+    values = values.reshape(num_views, grid, block, grid, block, hidden).mean(dim=(2, 4))
+    return values.reshape(num_views * grid * grid, hidden)
+
+
+def temporal_visual_features(
+    tokens: np.ndarray,
+    *,
+    mode: str,
+    lag: int = 1,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Flatten current visual tokens or concatenate a previous/current pair.
+
+    Returns features and the timestep indices that each row predicts. The pair
+    representation is deliberately simple: the same frozen visual tokens from
+    steps t-lag and t are concatenated, so any motion gain comes from temporal
+    evidence rather than a learned temporal module.
+    """
+    values = np.asarray(tokens, dtype=np.float32)
+    if values.ndim != 3:
+        raise ValueError("tokens must have shape [steps,tokens,dim]")
+    if lag < 1:
+        raise ValueError("lag must be positive")
+    if mode == "current":
+        return (
+            values.reshape(values.shape[0], -1),
+            np.arange(values.shape[0], dtype=np.int64),
+        )
+    if mode == "pair":
+        if values.shape[0] <= lag:
+            raise ValueError("not enough steps for requested lag")
+        previous = values[:-lag].reshape(values.shape[0] - lag, -1)
+        current = values[lag:].reshape(values.shape[0] - lag, -1)
+        return (
+            np.concatenate([previous, current], axis=1),
+            np.arange(lag, values.shape[0], dtype=np.int64),
+        )
+    raise ValueError("mode must be 'current' or 'pair'")
 
 
 def make_row_mask(
@@ -92,7 +150,7 @@ def fit_mlp_probe(
     *,
     seed: int,
 ):
-    """Fit the single frozen nonlinear probe used to challenge the linear finding."""
+    """Fit the frozen nonlinear probe used to challenge linear-probe artifacts."""
     model = make_pipeline(
         StandardScaler(),
         MLPRegressor(
@@ -137,13 +195,51 @@ def summarize_split_metrics(rows: list[dict[str, float]]) -> dict[str, float]:
     }
 
 
+def motion_compression_decision(
+    *,
+    medium_current: dict[str, float],
+    medium_pair: dict[str, float],
+    medium_memory: dict[str, float],
+    fast_pair: dict[str, float],
+    fast_memory: dict[str, float],
+) -> dict[str, object]:
+    """Frozen claim gate for the revised ICASSP motion-compression story."""
+    conditions = {
+        "medium_pair_velocity_ge_0_60": medium_pair["velocity_y_r2_median"] >= 0.60,
+        "medium_pair_gain_over_current_ge_0_20": (
+            medium_pair["velocity_y_r2_median"] - medium_current["velocity_y_r2_median"]
+            >= 0.20
+        ),
+        "medium_pair_gain_over_memory_ge_0_15": (
+            medium_pair["velocity_y_r2_median"] - medium_memory["velocity_y_r2_median"]
+            >= 0.15
+        ),
+        "medium_memory_position_ge_0_65": medium_memory["position_r2_mean_median"] >= 0.65,
+        "fast_pair_gt_memory": (
+            fast_pair["velocity_y_r2_median"] > fast_memory["velocity_y_r2_median"]
+        ),
+        "fast_memory_position_ge_0_60": fast_memory["position_r2_mean_median"] >= 0.60,
+    }
+    failed = [name for name, passed in conditions.items() if not passed]
+    return {
+        "go_icassp": not failed,
+        "conditions": conditions,
+        "failed_conditions": failed,
+        "interpretation": (
+            "motion_observable_but_weaker_after_recurrent_compression"
+            if not failed
+            else "claim_not_supported_stop_without_rescue"
+        ),
+    }
+
+
+# Legacy gate retained for backward compatibility with the first ICASSP draft.
 def paper_decision(
     medium_ridge: dict[str, float],
     medium_mlp: dict[str, float],
     fast_ridge: dict[str, float],
     fast_mlp: dict[str, float],
 ) -> dict[str, object]:
-    """Apply the frozen ICASSP go/kill rule to aggregated primary metrics."""
     conditions = {
         "medium_ridge_position_ge_0_65": medium_ridge["position_r2_mean_median"] >= 0.65,
         "medium_mlp_position_ge_0_65": medium_mlp["position_r2_mean_median"] >= 0.65,
@@ -154,8 +250,4 @@ def paper_decision(
         "mlp_velocity_y_below_0_60": medium_mlp["velocity_y_r2_median"] < 0.60,
     }
     failed = [name for name, passed in conditions.items() if not passed]
-    return {
-        "go_icassp": not failed,
-        "conditions": conditions,
-        "failed_conditions": failed,
-    }
+    return {"go_icassp": not failed, "conditions": conditions, "failed_conditions": failed}

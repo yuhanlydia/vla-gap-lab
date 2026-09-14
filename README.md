@@ -39,7 +39,7 @@ For mu-VLA:
 - [x] Track 2 Stage-0 parity restored: ShellGamePush 20/20, InterceptMedium 9/20, RememberColor5 18/20
 - [x] Track 2 Predictive-Dynamics Gate-2: position R² 0.765, velocity R² 0.169
 - [x] Track 2 minimal causal temporal operator: no control rescue; larger memory training stopped
-- [x] Track 2 ICASSP 2027 state-motion study code frozen: full64 Medium/Fast + MLP/Ridge + token/contact ablations
+- [x] Track 2 ICASSP 2027 motion-compression study code frozen: same-backbone current/two-frame visual controls vs recurrent memory, Medium/Fast, MLP/Ridge, targeted ablations
 - [ ] Track 2 ICASSP 2027 GPU run and GO/STOP decision
 - [x] Track 3 X-VLA reset-state diagnostic completed
 - [x] Track 3 scene-matched normalized-progress phase-proxy diagnostic completed (exploratory; formal Gate-0 closed)
@@ -47,13 +47,15 @@ For mu-VLA:
 
 ## Track 2 ICASSP 2027 run
 
-The stopped method line is being tested as a narrow four-page diagnostic paper: **does recurrent VLA memory make state more accessible than motion?** No new VLA architecture is trained.
+The stopped method line is now tested as a narrow four-page diagnostic paper: **does recurrent compression preserve motion information that is already available in short visual history?** This is not a claim that VLA systems generally cannot understand motion, and no new VLA architecture is trained.
 
-The frozen experiment uses 60 `InterceptMedium` and 60 `InterceptFast` episodes, stores all 64 recurrent memory tokens, and evaluates five whole-episode splits with Ridge and a fixed 2-layer MLP. Ablations isolate legacy stride-8 token sampling and post-contact filtering.
+The frozen experiment uses the same μVLA visual projector for all visual controls. It compares current-step visual tokens, two-frame visual tokens, and the post-update recurrent memory on 60 `InterceptMedium` and 60 `InterceptFast` episodes. Five whole-episode splits use Ridge and a fixed 2-layer MLP. Ablations cover full64-vs-stride8 memory tokens, pre-contact-vs-all-step rows, and two-frame lag1-vs-lag2.
 
 Run everything from the repository root:
 
 ```bash
+git pull origin main
+git submodule update --init --recursive
 bash scripts/run_track2_icassp.sh
 ```
 
@@ -67,10 +69,10 @@ configs/memory_revision/icassp_state_motion.yaml
 The runner writes a commit-friendly result summary to:
 
 ```text
-results/track2_icassp_state_motion_summary.json
+results/track2_icassp_motion_compression_summary.json
 ```
 
-If the full-memory nonlinear probe makes task-relevant velocity strongly accessible or the ordering reverses on `InterceptFast`, the paper is stopped rather than expanded.
+The compression-loss claim is allowed only if two-frame visual features first make task-relevant velocity strongly accessible, recurrent memory remains clearly worse on velocity while preserving current position, and the ordering replicates on `InterceptFast`. Otherwise the paper is stopped rather than expanded.
 
 ## Track 2 completed diagnostic
 

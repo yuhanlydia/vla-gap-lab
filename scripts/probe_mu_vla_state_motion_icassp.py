@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run leakage-safe full-memory state-vs-motion probes for the ICASSP study."""
+"""Probe whether recurrent compression preserves motion available in visual history."""
 
 from __future__ import annotations
 
@@ -18,14 +18,27 @@ from vla_gap_lab.state_motion import (
     make_row_mask,
     select_memory_tokens,
     summarize_split_metrics,
+    temporal_visual_features,
 )
 
+# representation, contact mode, probe, lag
 FROZEN_CELLS = (
-    ("full64", "pre_contact", "ridge"),
-    ("full64", "pre_contact", "mlp"),
-    ("stride8", "pre_contact", "ridge"),
-    ("full64", "all_steps", "ridge"),
+    ("memory", "pre_contact", "ridge", 0),
+    ("memory", "pre_contact", "mlp", 0),
+    ("visual_current", "pre_contact", "ridge", 0),
+    ("visual_current", "pre_contact", "mlp", 0),
+    ("visual_pair", "pre_contact", "ridge", 1),
+    ("visual_pair", "pre_contact", "mlp", 1),
+    # Reviewer-facing ablations.
+    ("memory_stride8", "pre_contact", "ridge", 0),
+    ("memory", "all_steps", "ridge", 0),
+    ("visual_pair", "pre_contact", "ridge", 2),
 )
+
+
+def _cell_name(representation: str, contact_mode: str, probe: str, lag: int) -> str:
+    suffix = f"_lag{lag}" if representation == "visual_pair" else ""
+    return f"{representation}{suffix}__{contact_mode}__{probe}"
 
 
 def _episode_paths(episodes_dir: Path, expected_episodes: int) -> list[Path]:
@@ -34,36 +47,46 @@ def _episode_paths(episodes_dir: Path, expected_episodes: int) -> list[Path]:
         raise ValueError(f"expected {expected_episodes} episode files, found {len(files)}")
     for episode_id, path in enumerate(files):
         arrays, metadata = load_episode_npz(path)
-        if metadata.get("study") != "icassp_state_motion":
+        if metadata.get("study") != "icassp_motion_compression":
             raise ValueError(f"{path}: wrong study metadata")
         if metadata.get("episode") != episode_id:
             raise ValueError(f"{path}: episode metadata mismatch")
         memory = arrays.get("memory_after")
+        visual = arrays.get("visual_tokens")
         if memory is None or memory.ndim != 3 or memory.shape[1] != 64:
             raise ValueError(f"{path}: expected memory_after [steps,64,hidden]")
+        if visual is None or visual.ndim != 3 or visual.shape[1] != 8:
+            raise ValueError(f"{path}: expected visual_tokens [steps,8,hidden]")
+        if len(memory) != len(visual) or len(memory) != len(arrays["step"]):
+            raise ValueError(f"{path}: row-count mismatch")
     return files
 
 
 def _fit_token_pca(
-    files: list[Path], train_ids: list[int], *, min_step: int, n_components: int
+    files: list[Path],
+    train_ids: list[int],
+    *,
+    array_key: str,
+    min_step: int,
+    n_components: int,
 ) -> IncrementalPCA:
     pca = IncrementalPCA(n_components=n_components, batch_size=4096)
     for episode_id in train_ids:
         arrays, _ = load_episode_npz(files[episode_id])
         mask = np.asarray(arrays["step"]) >= int(min_step)
-        memory = arrays["memory_after"][mask].astype(np.float32)
-        tokens = memory.reshape(-1, memory.shape[-1])
+        values = arrays[array_key][mask].astype(np.float32)
+        tokens = values.reshape(-1, values.shape[-1])
         if tokens.shape[0] < n_components:
-            raise ValueError(f"episode {episode_id} has too few token rows for token PCA")
+            raise ValueError(f"episode {episode_id} has too few {array_key} rows for token PCA")
         pca.partial_fit(tokens)
     return pca
 
 
-def _build_dataset(
+def _build_memory_dataset(
     files: list[Path],
     token_pca: IncrementalPCA,
     *,
-    token_mode: str,
+    stride8: bool,
     min_step: int,
     pre_contact_only: bool,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -71,24 +94,53 @@ def _build_dataset(
     for episode_id, path in enumerate(files):
         arrays, _ = load_episode_npz(path)
         mask = make_row_mask(
-            arrays["step"],
-            arrays["reached_status"],
-            min_step=min_step,
-            pre_contact_only=pre_contact_only,
+            arrays["step"], arrays["reached_status"],
+            min_step=min_step, pre_contact_only=pre_contact_only,
         )
         memory = arrays["memory_after"][mask].astype(np.float32)
         flat_tokens = memory.reshape(-1, memory.shape[-1])
         compressed = token_pca.transform(flat_tokens).astype(np.float32)
         compressed = compressed.reshape(memory.shape[0], 64, -1)
-        features.append(select_memory_tokens(compressed, token_mode))
+        features.append(select_memory_tokens(compressed, "stride8" if stride8 else "full64"))
         position.append(arrays["ball_position_xy"][mask].astype(np.float32))
         velocity.append(arrays["ball_velocity_xy"][mask].astype(np.float32))
         groups.append(np.full(mask.sum(), episode_id, dtype=np.int32))
     return (
-        np.concatenate(features, axis=0),
-        np.concatenate(position, axis=0),
-        np.concatenate(velocity, axis=0),
-        np.concatenate(groups, axis=0),
+        np.concatenate(features), np.concatenate(position),
+        np.concatenate(velocity), np.concatenate(groups),
+    )
+
+
+def _build_visual_dataset(
+    files: list[Path],
+    token_pca: IncrementalPCA,
+    *,
+    mode: str,
+    lag: int,
+    min_step: int,
+    pre_contact_only: bool,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    features, position, velocity, groups = [], [], [], []
+    for episode_id, path in enumerate(files):
+        arrays, _ = load_episode_npz(path)
+        visual = arrays["visual_tokens"].astype(np.float32)
+        flat_tokens = visual.reshape(-1, visual.shape[-1])
+        compressed = token_pca.transform(flat_tokens).astype(np.float32)
+        compressed = compressed.reshape(visual.shape[0], 8, -1)
+        x, current_indices = temporal_visual_features(compressed, mode=mode, lag=lag)
+        base_mask = make_row_mask(
+            arrays["step"], arrays["reached_status"],
+            min_step=min_step, pre_contact_only=pre_contact_only,
+        )
+        valid = base_mask[current_indices]
+        current_indices = current_indices[valid]
+        features.append(x[valid])
+        position.append(arrays["ball_position_xy"][current_indices].astype(np.float32))
+        velocity.append(arrays["ball_velocity_xy"][current_indices].astype(np.float32))
+        groups.append(np.full(valid.sum(), episode_id, dtype=np.int32))
+    return (
+        np.concatenate(features), np.concatenate(position),
+        np.concatenate(velocity), np.concatenate(groups),
     )
 
 
@@ -122,14 +174,12 @@ def _fit_cell(
     _, position_metrics = fitter(
         latent["train"], position[masks["train"]],
         latent["dev"], position[masks["dev"]],
-        latent["test"], position[masks["test"]],
-        **kwargs,
+        latent["test"], position[masks["test"]], **kwargs,
     )
     _, velocity_metrics = fitter(
         latent["train"], velocity[masks["train"]],
         latent["dev"], velocity[masks["dev"]],
-        latent["test"], velocity[masks["test"]],
-        **kwargs,
+        latent["test"], velocity[masks["test"]], **kwargs,
     )
     return {
         "sample_pca_dim": n_components,
@@ -172,52 +222,68 @@ def main() -> None:
         train_ids, dev_ids, test_ids = split_episode_ids(
             np.arange(args.episodes), train=36, dev=12, test=12, seed=split_seed
         )
-        token_pca = _fit_token_pca(
-            files, train_ids, min_step=args.min_step, n_components=args.token_pca_dim
+        memory_token_pca = _fit_token_pca(
+            files, train_ids, array_key="memory_after",
+            min_step=args.min_step, n_components=args.token_pca_dim,
         )
-        dataset_cache = {}
-        for token_mode, contact_mode, probe in FROZEN_CELLS:
-            key = (token_mode, contact_mode)
+        visual_token_pca = _fit_token_pca(
+            files, train_ids, array_key="visual_tokens",
+            min_step=args.min_step, n_components=args.token_pca_dim,
+        )
+        dataset_cache: dict[tuple, tuple] = {}
+        for representation, contact_mode, probe, lag in FROZEN_CELLS:
+            key = (representation, contact_mode, lag)
             if key not in dataset_cache:
-                dataset_cache[key] = _build_dataset(
-                    files,
-                    token_pca,
-                    token_mode=token_mode,
-                    min_step=args.min_step,
-                    pre_contact_only=contact_mode == "pre_contact",
-                )
+                if representation in {"memory", "memory_stride8"}:
+                    dataset_cache[key] = _build_memory_dataset(
+                        files, memory_token_pca,
+                        stride8=representation == "memory_stride8",
+                        min_step=args.min_step,
+                        pre_contact_only=contact_mode == "pre_contact",
+                    )
+                elif representation in {"visual_current", "visual_pair"}:
+                    dataset_cache[key] = _build_visual_dataset(
+                        files, visual_token_pca,
+                        mode="current" if representation == "visual_current" else "pair",
+                        lag=max(1, lag),
+                        min_step=args.min_step,
+                        pre_contact_only=contact_mode == "pre_contact",
+                    )
+                else:
+                    raise ValueError(f"unknown representation: {representation}")
             x, position, velocity, groups = dataset_cache[key]
             result = _fit_cell(
                 x, position, velocity, groups, train_ids, dev_ids, test_ids,
-                sample_pca_dim=args.sample_pca_dim,
-                probe=probe,
-                split_seed=split_seed,
+                sample_pca_dim=args.sample_pca_dim, probe=probe, split_seed=split_seed,
             )
             cells.append({
                 "split_seed": split_seed,
                 "train_episode_ids": train_ids,
                 "dev_episode_ids": dev_ids,
                 "test_episode_ids": test_ids,
-                "token_mode": token_mode,
+                "representation": representation,
                 "contact_mode": contact_mode,
                 "probe": probe,
+                "lag": lag,
                 "token_pca_dim": args.token_pca_dim,
                 **result,
             })
 
     aggregates = {}
-    for token_mode, contact_mode, probe in FROZEN_CELLS:
+    for representation, contact_mode, probe, lag in FROZEN_CELLS:
         rows = [
             cell for cell in cells
-            if cell["token_mode"] == token_mode
+            if cell["representation"] == representation
             and cell["contact_mode"] == contact_mode
             and cell["probe"] == probe
+            and cell["lag"] == lag
         ]
-        aggregates[f"{token_mode}__{contact_mode}__{probe}"] = summarize_split_metrics(rows)
+        aggregates[_cell_name(representation, contact_mode, probe, lag)] = summarize_split_metrics(rows)
 
     report = {
-        "schema_version": 1,
-        "study": "icassp_state_motion",
+        "schema_version": 2,
+        "study": "icassp_motion_compression",
+        "question": "does recurrent compression preserve motion available in short visual history?",
         "task": args.task,
         "episodes_dir": str(args.episodes_dir),
         "episodes": args.episodes,
