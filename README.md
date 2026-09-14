@@ -27,7 +27,7 @@ For mu-VLA:
 - primary inference is NF4 4-bit;
 - recurrent closed-loop evaluation remains `num_envs=1`;
 - long collections are crash-safe and store one episode at a time;
-- cached PCA/probe work uses `IncrementalPCA(batch_size=256)`;
+- cached PCA/probe work is offline after rollout;
 - BF16 is a confirmation tier, not the primary protocol.
 
 ## Current status
@@ -36,37 +36,47 @@ For mu-VLA:
 - [x] Track 2 real MIKASA simulator + released mu-VLA checkpoint path
 - [x] Track 2 Identity–Location IPSI Gate-1 completed and failed
 - [x] Track 2 corrected memory-aware Transformers runtime + action clipping
-- [x] Track 2 Stage-0: InterceptMedium 9/20 (45%) and RememberColor5 18/20 (90%) pass parity tolerance
-- [x] Track 2 ShellGamePush root cause: local rollout omitted the official per-step render/simulator synchronization
 - [x] Track 2 Stage-0 parity restored: ShellGamePush 20/20, InterceptMedium 9/20, RememberColor5 18/20
-- [x] Track 2 Predictive-Dynamics Gate-2: position R² 0.765, velocity R² 0.169 — Storage–Dynamics Gap supported
+- [x] Track 2 Predictive-Dynamics Gate-2: position R² 0.765, velocity R² 0.169
 - [x] Track 2 minimal causal temporal operator: no control rescue; larger memory training stopped
+- [x] Track 2 ICASSP 2027 state-motion study code frozen: full64 Medium/Fast + MLP/Ridge + token/contact ablations
+- [ ] Track 2 ICASSP 2027 GPU run and GO/STOP decision
 - [x] Track 3 X-VLA reset-state diagnostic completed
 - [x] Track 3 scene-matched normalized-progress phase-proxy diagnostic completed (exploratory; formal Gate-0 closed)
 - [ ] Track 3 semantic-phase portability probes on real paired RoboTwin trajectories
 
-## Track 2 result
+## Track 2 ICASSP 2027 run
 
-Stage-0 parity passes. The same-seed pinned-asset ShellGamePush replacement
-scored 20/20 after matching the official evaluator's per-step render call. The
-old and new archives contain byte-identical `025_mug` files, so YCB provenance
-was a real protocol mismatch but was not the cause of the 0/20 result.
+The stopped method line is being tested as a narrow four-page diagnostic paper: **does recurrent VLA memory make state more accessible than motion?** No new VLA architecture is trained.
 
-Follow:
+The frozen experiment uses 60 `InterceptMedium` and 60 `InterceptFast` episodes, stores all 64 recurrent memory tokens, and evaluates five whole-episode splits with Ridge and a fixed 2-layer MLP. Ablations isolate legacy stride-8 token sampling and post-contact filtering.
 
-```text
-docs/results/track2_ycb_asset_audit_2026-09-08.md
-docs/experiments/track2_predictive_dynamics_gate2.md
+Run everything from the repository root:
+
+```bash
+bash scripts/run_track2_icassp.sh
 ```
 
-Gate-2 completed on 40 InterceptMedium episodes. The policy scored 22/40
-(55%). On leakage-safe held-out episodes, `memory_after` decoded position at
-R² 0.765 but velocity at only R² 0.169; `memory_delta` velocity R² was 0.082.
-This meets the frozen Storage–Dynamics Gap criterion. The next authorized work
-was the minimal causal temporal operator. It failed: memory-injected velocity
-was 18/40 versus 19/40 normal, oracle velocity was also 19/40, and the paired
-bootstrap lower bound was −20 pp. Larger memory training is therefore not
-authorized by this run.
+The exact protocol and kill rule are in:
+
+```text
+docs/experiments/track2_icassp_state_motion.md
+configs/memory_revision/icassp_state_motion.yaml
+```
+
+The runner writes a commit-friendly result summary to:
+
+```text
+results/track2_icassp_state_motion_summary.json
+```
+
+If the full-memory nonlinear probe makes task-relevant velocity strongly accessible or the ordering reverses on `InterceptFast`, the paper is stopped rather than expanded.
+
+## Track 2 completed diagnostic
+
+Stage-0 parity passes. The same-seed pinned-asset ShellGamePush replacement scored 20/20 after matching the official evaluator's per-step render call. The old and new archives contain byte-identical `025_mug` files, so YCB provenance was a real protocol mismatch but was not the cause of the 0/20 result.
+
+Gate-2 completed on 40 InterceptMedium episodes. The policy scored 22/40 (55%). On leakage-safe held-out episodes, `memory_after` decoded position at R² 0.765 but velocity at only R² 0.169; `memory_delta` velocity R² was 0.082. The minimal causal temporal operator then failed: memory-injected velocity was 18/40 versus 19/40 normal, and oracle velocity was also 19/40. Larger memory training remains unauthorized.
 
 ## Reproducibility
 
