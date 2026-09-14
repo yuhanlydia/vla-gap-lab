@@ -1,6 +1,7 @@
 track: memory_revision
-study: icassp_state_motion
+study: icassp_motion_compression
 status: ready_to_run
+paper_question: does recurrent compression preserve motion available in short visual history?
 
 checkpoint:
   name: mu-vla-k2
@@ -16,12 +17,20 @@ collection:
   episodes_per_task: 60
   tasks:
     InterceptMedium-VLA-v0:
-      start_seed: 4243024242
+      start_seed: 4243224242
     InterceptFast-VLA-v0:
-      start_seed: 4243124242
-  memory_state: after_policy_update
-  memory_tokens: 64
-  memory_dtype: float16
+      start_seed: 4243324242
+  recurrent_memory:
+    state: after_policy_update
+    tokens: 64
+    dtype: float16
+  visual_control:
+    source: same_mu_vla_projector_current_step
+    cameras: 2
+    spatial_pool_grid: 2
+    tokens_per_step: 8
+    dtype: float16
+    note: projector features are captured by a forward hook during the same policy call; no extra encoder is used
 
 probe:
   split_seeds: [0, 1, 2, 3, 4]
@@ -31,18 +40,25 @@ probe:
   min_step: 2
   token_pca_dim: 32
   sample_pca_dim: 256
-  primary:
-    token_mode: full64
-    contact_mode: pre_contact
-    probes: [ridge, mlp]
+  primary_representations:
+    - current_visual
+    - two_frame_visual_lag1
+    - recurrent_memory_full64
+  primary_probes: [ridge, mlp]
+  targets:
+    - position_xy
+    - velocity_xy
   ablations:
-    - name: token_coverage
-      token_mode: stride8
-      contact_mode: pre_contact
+    - name: memory_token_coverage
+      compare: [full64, stride8]
       probe: ridge
     - name: contact_filter
-      token_mode: full64
-      contact_mode: all_steps
+      compare: [pre_contact, all_steps]
+      representation: recurrent_memory_full64
+      probe: ridge
+    - name: visual_temporal_span
+      compare_lags: [1, 2]
+      representation: two_frame_visual
       probe: ridge
 
 mlp:
@@ -53,12 +69,16 @@ mlp:
   early_stopping: true
 
 paper_kill_rule:
-  medium_position_r2_min: 0.65
-  medium_state_motion_gap_min: 0.25
-  fast_state_motion_gap_min_exclusive: 0.0
-  medium_mlp_velocity_y_r2_max_exclusive: 0.60
+  medium_two_frame_velocity_y_r2_min: 0.60
+  medium_two_frame_gain_over_current_min: 0.20
+  medium_two_frame_gain_over_memory_min: 0.15
+  medium_memory_position_r2_min: 0.65
+  fast_two_frame_velocity_y_must_exceed_memory: true
+  fast_memory_position_r2_min: 0.60
   interpretation: >-
-    Submit the four-page ICASSP diagnostic only if both Ridge and MLP preserve
-    the state-favoring ordering under full 64-token memory, the effect replicates
-    on InterceptFast, and the nonlinear probe does not make task-relevant
-    velocity strongly accessible. Otherwise stop the paper rather than expand scope.
+    The compression-loss claim is allowed only if motion is first shown to be
+    accessible from two consecutive frozen visual representations, yet is less
+    accessible from the recurrent memory that has seen the same history, while
+    current spatial state remains decodable from memory. If the two-frame
+    control fails, or recurrent memory matches it, stop the claim rather than
+    add tasks or tune thresholds.
