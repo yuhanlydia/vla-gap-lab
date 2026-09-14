@@ -3,6 +3,7 @@ import numpy as np
 from vla_gap_lab.state_motion import (
     fit_mlp_probe,
     make_row_mask,
+    paper_decision,
     select_memory_tokens,
     summarize_split_metrics,
 )
@@ -49,3 +50,21 @@ def test_summarize_split_metrics_uses_median_and_iqr():
     assert summary["position_r2_mean_median"] == 0.8
     assert summary["velocity_y_r2_median"] == 0.2
     assert np.isclose(summary["state_motion_gap_median"], 0.6)
+
+
+def test_paper_decision_enforces_frozen_kill_rule():
+    good = paper_decision(
+        {"position_r2_mean_median": 0.80, "velocity_y_r2_median": 0.30, "state_motion_gap_median": 0.50},
+        {"position_r2_mean_median": 0.75, "velocity_y_r2_median": 0.35, "state_motion_gap_median": 0.40},
+        {"position_r2_mean_median": 0.70, "velocity_y_r2_median": 0.40, "state_motion_gap_median": 0.30},
+        {"position_r2_mean_median": 0.68, "velocity_y_r2_median": 0.45, "state_motion_gap_median": 0.23},
+    )
+    assert good["go_icassp"] is True
+    killed = paper_decision(
+        {"position_r2_mean_median": 0.80, "velocity_y_r2_median": 0.30, "state_motion_gap_median": 0.50},
+        {"position_r2_mean_median": 0.75, "velocity_y_r2_median": 0.65, "state_motion_gap_median": 0.10},
+        {"position_r2_mean_median": 0.70, "velocity_y_r2_median": 0.40, "state_motion_gap_median": 0.30},
+        {"position_r2_mean_median": 0.68, "velocity_y_r2_median": 0.45, "state_motion_gap_median": 0.23},
+    )
+    assert killed["go_icassp"] is False
+    assert "mlp_velocity_y_below_0_60" in killed["failed_conditions"]
