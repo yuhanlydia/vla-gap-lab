@@ -34,24 +34,33 @@ Only `memory_after` is stored for the new ICASSP collection. The stopped `memory
 
 ## Leakage-safe probe protocol
 
-For each task use five deterministic whole-episode split seeds. Each split is 36 train / 12 dev / 12 test episodes. PCA is fit on train rows only. Hyperparameters are selected on dev only. Test episodes are untouched until final scoring.
+For each task use five deterministic whole-episode split seeds. Each split is 36 train / 12 dev / 12 test episodes. Dimensionality reduction is fit on train rows only. Hyperparameters are selected on dev only. Test episodes are untouched until final scoring.
+
+To keep full 64-token evaluation tractable under the submission deadline, dimensionality reduction is two-stage and train-only:
+
+1. token-level IncrementalPCA maps each 4096-D memory token to 32 dimensions using tokens from train episodes only;
+2. the transformed 64 tokens are flattened (2048-D) and sample-level PCA maps them to 256 dimensions, again using train rows only.
+
+The stride-8 ablation uses the same leakage-safe procedure with tokens `[0,8,...,56]`.
 
 Primary rows exclude the first two timesteps and post-contact rows (`reached_status >= 0.5`).
 
 ### Primary representation
 
 - token coverage: all 64 memory tokens;
-- PCA dimension: 256;
+- final PCA dimension: 256;
 - probe families: Ridge and fixed two-layer MLP;
 - targets: current ball position XY and current ball velocity XY;
 - report mean XY R² and per-axis R², including task-relevant velocity-y.
 
 ### Reviewer-facing ablations
 
-1. **Token coverage:** full 64 tokens vs. legacy stride-8 tokens `[0,8,...,56]`.
-2. **Probe capacity:** Ridge vs. nonlinear 2-layer MLP.
-3. **Contact filtering:** pre-contact only vs. all valid timesteps after step 2.
-4. **Dynamic regime replication:** Medium vs. Fast.
+To avoid an unnecessary Cartesian sweep, each ablation changes one factor from the primary Ridge setting:
+
+1. **Token coverage:** full 64 tokens vs. legacy stride-8 tokens `[0,8,...,56]`, Ridge, pre-contact.
+2. **Probe capacity:** Ridge vs. nonlinear 2-layer MLP, full 64 tokens, pre-contact.
+3. **Contact filtering:** pre-contact only vs. all valid timesteps after step 2, full 64 tokens, Ridge.
+4. **Dynamic regime replication:** Medium vs. Fast for the primary setting.
 
 No additional architecture search, kernel sweep, temporal operator tuning, or new VLA training is authorized.
 
@@ -66,7 +75,7 @@ Go condition:
 - Medium: position mean R² >= 0.65;
 - Medium: position mean R² - velocity-y R² >= 0.25;
 - Fast: position mean R² > velocity-y R²;
-- neither full-memory MLP velocity-y R² reaches 0.60 on Medium.
+- full-memory MLP velocity-y R² remains < 0.60 on Medium.
 
 If full-memory MLP reaches velocity-y R² >= 0.60 on Medium, or Fast reverses the ordering, the paper claim is abandoned rather than rescued with more tasks.
 
