@@ -1,0 +1,64 @@
+track: memory_revision
+study: icassp_state_motion
+status: ready_to_run
+
+checkpoint:
+  name: mu-vla-k2
+  path_default: models/mu-vla-m64-k2
+  precision: 4bit
+
+hardware:
+  target_gpu_vram_gb: 16
+  num_envs: 1
+  simulator_step_sync: render_after_step
+
+collection:
+  episodes_per_task: 60
+  tasks:
+    InterceptMedium-VLA-v0:
+      start_seed: 4243024242
+    InterceptFast-VLA-v0:
+      start_seed: 4243124242
+  memory_state: after_policy_update
+  memory_tokens: 64
+  memory_dtype: float16
+
+probe:
+  split_seeds: [0, 1, 2, 3, 4]
+  train_episodes: 36
+  dev_episodes: 12
+  test_episodes: 12
+  min_step: 2
+  token_pca_dim: 32
+  sample_pca_dim: 256
+  primary:
+    token_mode: full64
+    contact_mode: pre_contact
+    probes: [ridge, mlp]
+  ablations:
+    - name: token_coverage
+      token_mode: stride8
+      contact_mode: pre_contact
+      probe: ridge
+    - name: contact_filter
+      token_mode: full64
+      contact_mode: all_steps
+      probe: ridge
+
+mlp:
+  hidden_layer_sizes: [128, 64]
+  alpha: 0.0001
+  learning_rate_init: 0.001
+  max_iter: 500
+  early_stopping: true
+
+paper_kill_rule:
+  medium_position_r2_min: 0.65
+  medium_state_motion_gap_min: 0.25
+  fast_state_motion_gap_min_exclusive: 0.0
+  medium_mlp_velocity_y_r2_max_exclusive: 0.60
+  interpretation: >-
+    Submit the four-page ICASSP diagnostic only if both Ridge and MLP preserve
+    the state-favoring ordering under full 64-token memory, the effect replicates
+    on InterceptFast, and the nonlinear probe does not make task-relevant
+    velocity strongly accessible. Otherwise stop the paper rather than expand scope.
