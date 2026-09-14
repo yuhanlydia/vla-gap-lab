@@ -135,3 +135,27 @@ def summarize_split_metrics(rows: list[dict[str, float]]) -> dict[str, float]:
         **stats("velocity_y_r2", vel),
         **stats("state_motion_gap", gap),
     }
+
+
+def paper_decision(
+    medium_ridge: dict[str, float],
+    medium_mlp: dict[str, float],
+    fast_ridge: dict[str, float],
+    fast_mlp: dict[str, float],
+) -> dict[str, object]:
+    """Apply the frozen ICASSP go/kill rule to aggregated primary metrics."""
+    conditions = {
+        "medium_ridge_position_ge_0_65": medium_ridge["position_r2_mean_median"] >= 0.65,
+        "medium_mlp_position_ge_0_65": medium_mlp["position_r2_mean_median"] >= 0.65,
+        "medium_ridge_gap_ge_0_25": medium_ridge["state_motion_gap_median"] >= 0.25,
+        "medium_mlp_gap_ge_0_25": medium_mlp["state_motion_gap_median"] >= 0.25,
+        "fast_ridge_state_gt_motion": fast_ridge["state_motion_gap_median"] > 0.0,
+        "fast_mlp_state_gt_motion": fast_mlp["state_motion_gap_median"] > 0.0,
+        "mlp_velocity_y_below_0_60": medium_mlp["velocity_y_r2_median"] < 0.60,
+    }
+    failed = [name for name, passed in conditions.items() if not passed]
+    return {
+        "go_icassp": not failed,
+        "conditions": conditions,
+        "failed_conditions": failed,
+    }
