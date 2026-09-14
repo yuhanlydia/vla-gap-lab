@@ -5,6 +5,7 @@ diffusers==0.30.0
 draccus==0.10.0
 peft==0.11.1
 protobuf==3.20.3
+scikit-learn==1.5.2
 tensorflow-metadata==1.15.0
 timm==0.9.16
 torchvision==0.17.1
