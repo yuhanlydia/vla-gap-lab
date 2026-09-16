@@ -39,8 +39,8 @@ For mu-VLA:
 - [x] Track 2 Stage-0 parity restored: ShellGamePush 20/20, InterceptMedium 9/20, RememberColor5 18/20
 - [x] Track 2 Predictive-Dynamics Gate-2: position R² 0.765, velocity R² 0.169
 - [x] Track 2 minimal causal temporal operator: no control rescue; larger memory training stopped
-- [x] Track 2 ICASSP 2027 motion-compression study code frozen: same-backbone current/two-frame visual controls vs recurrent memory, Medium/Fast, MLP/Ridge, targeted ablations
-- [ ] Track 2 ICASSP 2027 GPU run and GO/STOP decision
+- [x] Track 2 ICASSP 2027 motion-compression v2 run completed: same-backbone current/two-frame visual controls vs recurrent memory, Medium/Fast, MLP/Ridge, targeted ablations
+- [ ] Track 2 ICASSP 2027 corrected-v3 evaluation (v2 is provisional after the September 16 audit below)
 - [x] Track 3 X-VLA reset-state diagnostic completed
 - [x] Track 3 scene-matched normalized-progress phase-proxy diagnostic completed (exploratory; formal Gate-0 closed)
 - [ ] Track 3 semantic-phase portability probes on real paired RoboTwin trajectories
@@ -73,6 +73,57 @@ results/track2_icassp_motion_compression_summary.json
 ```
 
 The compression-loss claim is allowed only if two-frame visual features first make task-relevant velocity strongly accessible, recurrent memory remains clearly worse on velocity while preserving current position, and the ordering replicates on `InterceptFast`. Otherwise the paper is stopped rather than expanded.
+
+### September 16 evaluation audit: v2 is provisional
+
+The 60-episode Medium and 60-episode Fast v2 run completed, but its formal
+`1/6` decision must not be interpreted as a clean rejection of recurrent
+memory. A code and data audit found two evaluation defects and one genuine
+remaining scientific risk:
+
+1. **The formal gate and the reported headline numbers used different
+   probes.** The six-condition decision in
+   `scripts/summarize_icassp_state_motion.py` uses the MLP aggregates, whereas
+   the cited Fast recurrent-memory values (position R² `0.067`, velocity-y R²
+   `-0.161`) are Ridge aggregates. The v2 explanation mixed those two result
+   families.
+2. **The frozen MLP is not a reliable gate.** It standardizes probe inputs but
+   not the two-dimensional position or velocity targets. Some fits reached the
+   500-iteration limit without convergence, and all primary MLP cells had
+   strongly negative R². In a diagnostic rerun of Fast two-frame split 0,
+   target standardization changed position R² from `[-5.61, 0.01]` to
+   `[-0.45, 0.47]` and velocity R² from `[-8.00, -0.24]` to
+   `[-3.05, 0.01]`. This does not establish a positive result; it establishes
+   that the original MLP-based kill rule is invalid.
+3. **`pre_contact` is not a physical-contact mask.** The code retains every
+   row with `reached_status < 0.5`, but the environment sets that status from
+   TCP distance to an intended hit pose, not from robot-ball contact. Thus
+   collisions, rebounds, and out-of-view motion can remain in the nominal
+   pre-contact set. In Fast, at least 517 of 3,218 retained rows across 26 of
+   60 episodes show reversed/large lateral velocity or out-of-range position;
+   observed extremes include velocity-y `-2.12` and position-y `-2.14`.
+
+The collection alignment itself passed the audit: the environment launches
+the ball primarily along the y axis, stored position differences correlate
+with stored velocity at approximately `0.99`, and the inferred simulator
+interval is approximately `0.05` seconds. No velocity-axis swap or one-step
+label offset was found.
+
+The contaminated Fast tail materially affects position decoding. On the same
+Fast split-0 two-frame Ridge diagnostic, limiting evaluation to steps 0--30
+changed per-axis position R² from `[-0.62, 0.37]` to `[0.72, 0.77]`. Velocity-y
+remained weak at approximately `0.01`, so the audit does **not** rescue the
+motion-preservation hypothesis. It shows that Fast position failure is largely
+an evaluation-window/mask problem while velocity accessibility remains the
+main unresolved scientific issue.
+
+The original v2 artifacts are retained for auditability. A corrected v3 will
+be versioned separately, will standardize and invert-transform MLP targets,
+record convergence diagnostics, use Ridge as the primary gate and a converged
+MLP only as a consistency check, and replace `reached_status` with a valid
+contact/visibility definition. Its mask, window, thresholds, and analysis will
+be fixed before looking at corrected aggregate results; positive and negative
+outcomes will both be reported.
 
 ## Track 2 completed diagnostic
 
