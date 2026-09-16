@@ -1,0 +1,55 @@
+{
+  "schema_version": 3,
+  "study": "icassp_motion_compression_v3",
+  "cohort_policy": "post_audit_reanalysis_of_existing_v2_episodes_not_new_confirmatory_data",
+  "source_cache_schema": 2,
+  "episodes": 60,
+  "tasks": ["InterceptMedium-VLA-v0", "InterceptFast-VLA-v0"],
+  "annotation": {
+    "maniskill_version": "3.0.0b15",
+    "mikasa_commit": "16634db18bef08128ed79346469c86fc12169aed",
+    "contact_threshold_newton": 0.001,
+    "contact_sampling": "every_physics_substep_all_robot_links_vs_ball",
+    "visibility": "ball_segmentation_in_policy_224px_center_crop_area_0.9",
+    "cameras": ["base_camera", "hand_camera"],
+    "replay_atol": 0.0001,
+    "reward_atol": 0.00001
+  },
+  "mask": {
+    "min_step": 2,
+    "max_step": null,
+    "min_visible_pixels": 4,
+    "common_visible_lags": [0, 1, 2],
+    "contact_latched": true,
+    "target_value_filter": false
+  },
+  "probe": {
+    "split_seeds": [0, 1, 2, 3, 4],
+    "train_episodes": 36,
+    "dev_episodes": 12,
+    "test_episodes": 12,
+    "min_rows_per_split": 32,
+    "min_episode_coverage": 0.8,
+    "token_pca_dim": 32,
+    "sample_pca_dim": 256,
+    "ridge_alphas": [0.1, 1.0, 10.0, 100.0],
+    "mlp_hidden": [128, 64],
+    "mlp_max_epochs": 500,
+    "mlp_patience": 25,
+    "mlp_tol": 0.0001,
+    "mlp_batch_size": 256,
+    "target_scaling": "train_only_inverse_before_metrics",
+    "early_stopping": "explicit_whole_episode_dev",
+    "primary_gate": "ridge",
+    "mlp_role": "converged_consistency_check_not_replacement",
+    "pca_role": "train_only_shared_token_transform_per_modality"
+  },
+  "claim_thresholds": {
+    "medium_pair_velocity_ge": 0.6,
+    "medium_pair_minus_current_ge": 0.2,
+    "medium_pair_minus_memory_ge": 0.15,
+    "medium_memory_position_ge": 0.65,
+    "fast_pair_minus_memory_gt": 0.0,
+    "fast_memory_position_ge": 0.6
+  }
+}
